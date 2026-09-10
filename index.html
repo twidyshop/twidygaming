@@ -47,7 +47,6 @@
             display: block;
         }
 
-        /* Payment method active selection */
         .pay-radio:checked + div {
             border-color: #3b82f6;
             background-color: rgba(59, 130, 246, 0.15);
@@ -82,10 +81,10 @@
         </div>
     </nav>
 
-    <!-- CONTENT VIEWS (Dynamic Switcher) -->
+    <!-- CONTENT VIEWS -->
     <main class="flex-grow max-w-[1400px] w-full mx-auto p-4 md:p-6 lg:p-8 space-y-6">
         
-        <!-- VIEW 1: HOME / TOPUP (Main Shop Page) -->
+        <!-- VIEW 1: TOPUP -->
         <div id="view-topup" class="space-y-6">
             <!-- Hero Section -->
             <div id="home" class="relative rounded-2xl bg-gradient-to-r from-[#141d3a] via-[#1c1836] to-[#0f1423] border border-borderDim overflow-hidden min-h-[280px] flex items-center">
@@ -231,7 +230,7 @@
                         </button>
                     </div>
 
-                    <!-- Interactive Payment Methods Selection -->
+                    <!-- Payment Methods -->
                     <div class="bg-bgCard rounded-xl p-5 border border-borderDim">
                         <h3 class="font-bold text-sm mb-1 text-white">Metode Pembayaran</h3>
                         <p class="text-xs text-textMuted mb-4">Pilih metode pembayaran favoritmu</p>
@@ -277,7 +276,7 @@
                         <div class="text-center text-xs text-blue-400 cursor-pointer hover:underline font-medium">+ 4 metode lainnya</div>
                     </div>
                     
-                    <!-- Support Banner (WhatsApp Direct Link) -->
+                    <!-- Support WhatsApp -->
                     <div class="relative bg-gradient-to-r from-[#4c1d95] to-[#1e3a8a] rounded-xl p-5 overflow-hidden border border-purple-500/30">
                         <div class="relative z-10 w-2/3">
                             <h3 class="font-bold text-sm text-white mb-1">Ada pertanyaan?</h3>
@@ -375,11 +374,11 @@
     </footer>
 
     <script>
-        // Data Game dinamis
         const gamesData = {
             'ml': {
                 id: 'ml', name: 'Mobile Legends', img: 'assets/ml-logo.png', hasServer: true, code: 'ML_DIAMOND',
-                desc: 'Top Up Diamond Mobile Legends dengan mudah dan cepat!', iconBadge: '<div class="w-6 h-6 bg-gradient-to-br from-blue-400 to-blue-700 rounded flex items-center justify-center text-[9px] font-bold text-white">ML</div>',
+                desc: 'Top Up Diamond Mobile Legends dengan mudah dan cepat!', 
+                iconBadge: '<img src="assets/ml-logo.png" class="w-6 h-6 rounded object-cover border border-borderDim">',
                 nominals: [
                     { id: 1, name: '86 Diamonds', bonus: 0, price: 20500 },
                     { id: 2, name: '172 Diamonds', bonus: 0, price: 41000 },
@@ -390,7 +389,8 @@
             },
             'ff': {
                 id: 'ff', name: 'Free Fire', img: 'assets/ff-logo.png', hasServer: false, code: 'FF_DIAMOND',
-                desc: 'Top Up Diamond Free Fire instan dan terpercaya!', iconBadge: '<div class="w-6 h-6 bg-gradient-to-br from-orange-400 to-red-600 rounded flex items-center justify-center"><i class="fas fa-fire text-white text-xs"></i></div>',
+                desc: 'Top Up Diamond Free Fire instan dan terpercaya!', 
+                iconBadge: '<img src="assets/ff-logo.png" class="w-6 h-6 rounded object-cover border border-borderDim">',
                 nominals: [
                     { id: 1, name: '70 Diamonds', bonus: 0, price: 10000 },
                     { id: 2, name: '140 Diamonds', bonus: 0, price: 20000 },
@@ -400,7 +400,8 @@
             },
             'pubg': {
                 id: 'pubg', name: 'PUBG Mobile', img: 'assets/pubg-logo.png', hasServer: false, code: 'PUBG_UC',
-                desc: 'Top Up UC PUBG Mobile harga promo!', iconBadge: '<div class="w-6 h-6 bg-gray-700 rounded flex items-center justify-center"><i class="fas fa-helmet-battle text-white text-xs"></i></div>',
+                desc: 'Top Up UC PUBG Mobile harga promo!', 
+                iconBadge: '<img src="assets/pubg-logo.png" class="w-6 h-6 rounded object-cover border border-borderDim">',
                 nominals: [
                     { id: 1, name: '60 UC', bonus: 0, price: 14000 },
                     { id: 2, name: '325 UC', bonus: 0, price: 70000 },
@@ -409,7 +410,8 @@
             },
             'valo': {
                 id: 'valo', name: 'Valorant', img: 'assets/valo-logo.png', hasServer: false, code: 'VALO_POINT',
-                desc: 'Beli Valorant Points cepat dan aman.', iconBadge: '<div class="w-6 h-6 bg-red-600 rounded flex items-center justify-center font-bold text-white">V</div>',
+                desc: 'Beli Valorant Points cepat dan aman.', 
+                iconBadge: '<img src="assets/valo-logo.png" class="w-6 h-6 rounded object-cover border border-borderDim">',
                 nominals: [
                     { id: 1, name: '300 Points', bonus: 0, price: 45000 },
                     { id: 2, name: '625 Points', bonus: 0, price: 90000 },
@@ -422,14 +424,12 @@
         let selectedNominal = activeGame.nominals[0];
         let snapClientKeyLoaded = false;
 
-        // Navigation Switcher for top header buttons
         function navigate(viewName) {
             ['topup', 'promo', 'panduan'].forEach(v => {
                 const el = document.getElementById('view-' + v);
                 if(el) el.classList.add('hidden');
             });
             
-            // Highlight navbar items
             ['home', 'topup', 'promo', 'panduan'].forEach(n => {
                 const navEl = document.getElementById('nav-' + n);
                 if(navEl) navEl.classList.remove('text-blue-500');
@@ -449,7 +449,6 @@
             }
         }
 
-        // Asynchronous non-blocking loading of Midtrans Script to fix endless loading issue
         async function loadMidtransScript() {
             if (snapClientKeyLoaded) return;
             try {
@@ -462,16 +461,13 @@
                     script.async = true;
                     document.head.appendChild(script);
                     snapClientKeyLoaded = true;
-                } else {
-                    console.warn('Midtrans Client Key not found in environment variables.');
                 }
             } catch (error) {
-                console.error('Failed to load Midtrans config asynchronously', error);
+                console.error('Failed to load Midtrans config', error);
             }
         }
 
         function initApp() {
-            // Load script in background so it never blocks UI rendering
             setTimeout(loadMidtransScript, 500);
             renderSidebar();
             changeGame('ml');
@@ -597,7 +593,6 @@
                             onClose: function(){ alert('Anda menutup popup tanpa menyelesaikan pembayaran.'); }
                         });
                     } else {
-                        // Fallback redirect if snap.js hasn't fully loaded yet
                         window.open(`https://app.midtrans.com/snap/v2/vtweb/${data.token}`, '_blank');
                     }
                 } else {
@@ -610,7 +605,6 @@
             }
         });
 
-        // Initialize App
         initApp();
     </script>
 </body>
