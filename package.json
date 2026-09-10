@@ -1,0 +1,12 @@
+{
+  "name": "twidyshop-html-prod",
+  "version": "1.0.0",
+  "description": "Vercel Top Up Project Production",
+  "scripts": {
+    "start": "npx serve ."
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "midtrans-client": "^1.3.1"
+  }
+}
