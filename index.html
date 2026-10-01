@@ -2,8 +2,8 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TPLAY - Nonton Anime Kapan Saja</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TPLAY - Nonton Anime Terlengkap</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -13,355 +13,455 @@
                     colors: {
                         background: '#0B0F19',
                         card: '#131927',
-                        primary: '#1d4ed8'
+                        primary: '#2563eb'
                     },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    }
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }
                 }
             }
         }
     </script>
-    <!-- Google Fonts -->
+    <!-- Google Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Vue 3 & Lucide Icons -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body { background-color: #0B0F19; color: #ffffff; }
+        body { background-color: #0B0F19; color: #ffffff; overflow-x: hidden; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         [v-cloak] { display: none; }
-        .hero-gradient { background: linear-gradient(to right, rgba(11,15,25,1) 0%, rgba(11,15,25,0.6) 50%, transparent 100%); }
+        .hero-gradient { background: linear-gradient(to right, rgba(11,15,25,1) 0%, rgba(11,15,25,0.4) 100%); }
         .hero-fade-bottom { background: linear-gradient(to top, #0B0F19 0%, transparent 100%); }
         .badge-polygon { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 85%); }
+        .scroll-smooth { scroll-behavior: smooth; }
+        /* Animasi Transisi View */
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; }
     </style>
 </head>
-<body class="antialiased overflow-x-hidden hide-scrollbar">
-    <div id="app" v-cloak class="min-h-screen pb-20 md:pb-10">
+<body class="antialiased">
+    <div id="app" v-cloak class="min-h-screen">
         
-        <!-- ================= HOME VIEW ================= -->
-        <div v-show="currentView === 'home'" class="fade-in">
-            <!-- Navbar -->
-            <nav class="absolute top-0 w-full z-50 flex items-center justify-between px-4 md:px-12 py-6 bg-gradient-to-b from-black/80 to-transparent">
-                <div class="flex items-center gap-8">
-                    <div class="flex items-center gap-2 cursor-pointer">
-                        <i data-lucide="play" class="w-8 h-8 text-blue-500 fill-blue-500"></i>
-                        <span class="font-bold text-2xl tracking-wider">TPLAY</span>
-                    </div>
-                    <div class="hidden md:flex gap-6 text-sm font-medium text-gray-300">
-                        <a href="#" class="text-white border-b-2 border-blue-500 pb-1">Beranda</a>
-                        <a href="#" class="hover:text-white transition">Trending</a>
-                        <a href="#" class="hover:text-white transition">Semua Anime</a>
-                        <a href="#" class="hover:text-white transition">Jadwal</a>
-                        <a href="#" class="hover:text-white transition flex items-center gap-1">Lainnya <i data-lucide="chevron-down" class="w-4 h-4"></i></a>
-                    </div>
+        <!-- ================= NAVBAR ================= -->
+        <nav class="fixed top-0 w-full z-50 flex items-center justify-between px-4 md:px-12 py-4 bg-gradient-to-b from-black/90 via-black/60 to-transparent backdrop-blur-sm transition-all duration-300" :class="{'bg-black/95 border-b border-gray-800': isScrolled}">
+            <div class="flex items-center gap-8">
+                <!-- Logo -->
+                <div @click="changeView('home')" class="flex items-center gap-2 cursor-pointer z-50">
+                    <i data-lucide="play" class="w-8 h-8 text-blue-600 fill-blue-600"></i>
+                    <span class="font-bold text-2xl tracking-wider hidden sm:block">TPLAY</span>
                 </div>
-                <div class="flex items-center gap-4">
-                    <div class="relative hidden md:block">
-                        <i data-lucide="search" class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                        <input type="text" placeholder="Cari anime, genre..." class="bg-card border border-gray-700 rounded-full py-2 pl-10 pr-4 text-sm focus:outline-none focus:border-blue-500 w-64 text-white">
-                    </div>
-                    <button class="md:hidden"><i data-lucide="search" class="w-6 h-6"></i></button>
-                    <button class="md:hidden"><i data-lucide="menu" class="w-6 h-6"></i></button>
-                </div>
-            </nav>
-
-            <!-- Hero Loading -->
-            <div v-if="isLoading" class="h-[70vh] flex justify-center items-center">
-                <i data-lucide="loader-2" class="w-10 h-10 animate-spin text-blue-500"></i>
-            </div>
-
-            <!-- Hero Section -->
-            <div v-if="!isLoading && homeData.hero" class="relative h-[75vh] md:h-[85vh] w-full overflow-hidden">
-                <img :src="homeData.hero.img" class="absolute inset-0 object-cover w-full h-full object-top" />
-                <div class="absolute inset-0 hero-gradient z-10"></div>
-                <div class="absolute bottom-0 h-40 w-full hero-fade-bottom z-10"></div>
-                
-                <div class="absolute inset-0 z-20 flex flex-col justify-center px-4 md:px-12 mt-10">
-                    <div class="max-w-2xl">
-                        <div class="flex items-center gap-2 mb-3">
-                            <span class="bg-red-600 flex items-center gap-1 text-white text-xs font-bold px-2 py-1 rounded">
-                                <i data-lucide="flame" class="w-3 h-3 fill-current"></i> Trending #1
-                            </span>
-                            <span class="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded">Season Terbaru</span>
-                        </div>
-                        <h1 class="text-4xl md:text-6xl font-black mb-4 italic uppercase tracking-wide drop-shadow-lg">{{ homeData.hero.title }}</h1>
-                        
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            <span v-for="(genre, idx) in homeData.hero.genres?.slice(0,3)" :key="idx" class="border border-gray-500 bg-black/40 px-3 py-1 rounded-full text-xs text-gray-300">
-                                {{ genre.tag }}
-                            </span>
-                        </div>
-                        
-                        <p class="text-gray-300 text-sm md:text-base mb-8 line-clamp-3 leading-relaxed">
-                            Ikuti petualangan seru dan menegangkan dari kelanjutan kisah {{ homeData.hero.title }}. Kekuatan baru yang bangkit mengundang bahaya tak terduga yang mengancam keseimbangan dunia!
-                        </p>
-                        
-                        <div class="flex items-center gap-4">
-                            <button @click="openDetail(homeData.hero)" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg flex items-center gap-2 transition shadow-lg shadow-blue-500/30">
-                                <i data-lucide="play" class="w-5 h-5 fill-current"></i> Mulai Nonton
-                            </button>
-                            <button @click="openDetail(homeData.hero)" class="bg-card/80 border border-gray-600 hover:bg-card text-white font-semibold py-3 px-6 rounded-lg flex items-center gap-2 transition">
-                                <i data-lucide="info" class="w-5 h-5"></i> Detail
-                            </button>
-                        </div>
-                    </div>
+                <!-- Desktop Menu -->
+                <div class="hidden lg:flex gap-6 text-sm font-medium text-gray-300">
+                    <a @click="changeView('home')" href="#" :class="currentView === 'home' ? 'text-white border-b-2 border-blue-600 pb-1' : 'hover:text-white transition'">Beranda</a>
+                    <a href="#ongoing" class="hover:text-white transition">On Going</a>
+                    <a href="#completed" class="hover:text-white transition">Completed</a>
+                    <a href="#movie" class="hover:text-white transition">Movie</a>
+                    <a @click="changeView('genres')" href="#" class="hover:text-white transition">Genre Populer</a>
                 </div>
             </div>
-
-            <!-- Trending / Ongoing Anime Grid -->
-            <div class="px-4 md:px-12 mt-4 relative z-20">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-xl md:text-2xl font-bold flex items-center gap-2">
-                        <i data-lucide="flame" class="w-6 h-6 text-red-500 fill-red-500"></i> Anime Trending
-                    </h2>
-                    <a href="#" class="text-sm text-gray-400 hover:text-white flex items-center gap-1">Lihat Semua <i data-lucide="arrow-right" class="w-4 h-4"></i></a>
+            
+            <div class="flex items-center gap-4 z-50">
+                <!-- Search Box -->
+                <div class="relative hidden md:block">
+                    <i data-lucide="search" class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    <input v-model="searchQuery" type="text" placeholder="Cari anime..." class="bg-card/80 border border-gray-700 rounded-full py-2 pl-10 pr-4 text-sm focus:outline-none focus:border-blue-600 focus:bg-card w-48 lg:w-64 text-white transition-all">
                 </div>
-                
-                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                    <div v-for="(anime, idx) in homeData.trending" :key="idx" @click="openDetail(anime)" class="group cursor-pointer">
-                        <div class="relative aspect-[3/4] rounded-xl overflow-hidden mb-3 border border-gray-800 shadow-xl group-hover:border-blue-500/50 transition duration-300">
-                            <!-- Number Badge from Design -->
-                            <div class="absolute top-0 left-0 bg-blue-600 text-white font-black text-lg px-3 py-1 badge-polygon z-10 shadow-lg">
-                                {{ idx + 1 }}
-                            </div>
-                            <!-- Rating -->
-                            <div v-if="anime.score" class="absolute top-2 right-2 bg-black/80 backdrop-blur rounded px-2 py-0.5 text-xs font-bold text-yellow-500 flex items-center gap-1 z-10">
-                                <i data-lucide="star" class="w-3 h-3 fill-current"></i> {{ anime.score }}
-                            </div>
-                            <!-- Gradient & Play Icon on Hover -->
-                            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-center justify-center">
-                                <i data-lucide="play-circle" class="w-12 h-12 text-white opacity-80 group-hover:scale-110 transition-transform"></i>
-                            </div>
-                            <img :src="anime.img" class="object-cover w-full h-full group-hover:scale-110 transition duration-500" />
-                        </div>
-                        <h3 class="font-semibold text-sm md:text-base line-clamp-1 group-hover:text-blue-400 transition">{{ anime.title }}</h3>
-                        <p class="text-gray-400 text-xs mt-1">{{ anime.episode || 'Latest' }}</p>
-                    </div>
-                </div>
+                <!-- Mobile Buttons -->
+                <button class="md:hidden p-2 rounded-full hover:bg-gray-800"><i data-lucide="search" class="w-6 h-6"></i></button>
+                <button @click="isMobileMenuOpen = !isMobileMenuOpen" class="lg:hidden p-2 rounded-full hover:bg-gray-800">
+                    <i :data-lucide="isMobileMenuOpen ? 'x' : 'menu'" class="w-6 h-6"></i>
+                </button>
             </div>
 
-            <!-- Genre Populer Pills -->
-            <div class="px-4 md:px-12 mt-12 mb-10">
-                <h2 class="text-xl md:text-2xl font-bold mb-6">Genre Populer</h2>
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                    <div v-for="(genre, idx) in homeData.genres" :key="idx" class="bg-card border border-gray-800 rounded-xl p-4 flex items-center gap-3 cursor-pointer hover:border-blue-500 hover:bg-gray-800/80 transition group shadow-md">
-                        <div class="w-10 h-10 rounded-full bg-gray-800 group-hover:bg-blue-500/20 flex items-center justify-center transition">
-                            <i data-lucide="hash" class="w-5 h-5 text-blue-500 group-hover:text-blue-400"></i>
-                        </div>
-                        <div>
-                            <h3 class="font-medium text-white text-sm group-hover:text-blue-400 transition">{{ genre.title }}</h3>
-                            <p class="text-xs text-gray-500">{{ Math.floor(Math.random() * 500) + 100 }}+ anime</p>
-                        </div>
-                    </div>
-                </div>
+            <!-- Mobile Menu Overlay -->
+            <div v-if="isMobileMenuOpen" class="absolute top-0 left-0 w-full h-screen bg-black/95 backdrop-blur-md pt-20 px-6 flex flex-col gap-6 lg:hidden shadow-2xl">
+                <a @click="changeView('home'); isMobileMenuOpen = false" class="text-xl font-bold border-b border-gray-800 pb-4">Beranda</a>
+                <a href="#ongoing" @click="isMobileMenuOpen = false" class="text-xl font-bold border-b border-gray-800 pb-4">On Going Anime</a>
+                <a href="#completed" @click="isMobileMenuOpen = false" class="text-xl font-bold border-b border-gray-800 pb-4">Completed Anime</a>
+                <a href="#movie" @click="isMobileMenuOpen = false" class="text-xl font-bold border-b border-gray-800 pb-4">Anime Movie</a>
+                <a @click="changeView('genres'); isMobileMenuOpen = false" class="text-xl font-bold border-b border-gray-800 pb-4">Jelajahi Genre</a>
             </div>
+        </nav>
+
+        <!-- LOADING UTAMA -->
+        <div v-if="isLoadingHome" class="h-screen flex flex-col justify-center items-center gap-4">
+            <i data-lucide="loader-2" class="w-12 h-12 animate-spin text-blue-600"></i>
+            <span class="text-gray-400 font-medium tracking-widest uppercase text-sm">Memuat Data API...</span>
         </div>
 
+        <!-- ================= HOME VIEW ================= -->
+        <transition name="fade">
+        <div v-show="currentView === 'home' && !isLoadingHome" class="pb-20">
+            
+            <!-- HERO SECTION -->
+            <div v-if="homeData.hero" class="relative h-[70vh] md:h-[85vh] w-full overflow-hidden">
+                <img :src="homeData.hero.img" class="absolute inset-0 object-cover w-full h-full object-top" />
+                <div class="absolute inset-0 hero-gradient z-10 hidden md:block"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent z-10 md:hidden"></div>
+                <div class="absolute bottom-0 h-32 w-full hero-fade-bottom z-10 hidden md:block"></div>
+                
+                <div class="absolute inset-0 z-20 flex flex-col justify-end md:justify-center px-4 md:px-12 pb-10 md:pb-0 md:mt-16">
+                    <div class="max-w-3xl">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="bg-red-600 flex items-center gap-1 text-white text-[10px] md:text-xs font-bold px-2 py-1 rounded">
+                                <i data-lucide="flame" class="w-3 h-3 fill-current"></i> HOT UPDATE
+                            </span>
+                            <span v-if="homeData.hero.type" class="bg-blue-600 text-white text-[10px] md:text-xs font-bold px-2 py-1 rounded">{{ homeData.hero.type }}</span>
+                        </div>
+                        <h1 class="text-3xl md:text-5xl lg:text-7xl font-black mb-3 italic uppercase tracking-wider drop-shadow-2xl leading-tight">{{ homeData.hero.title }}</h1>
+                        
+                        <div class="flex items-center gap-3 mb-4 text-xs md:text-sm text-gray-300 font-medium">
+                            <span class="text-green-500 flex items-center gap-1"><i data-lucide="star" class="w-4 h-4 fill-current"></i> {{ homeData.hero.score || 'N/A' }}</span>
+                            <span>|</span>
+                            <span>{{ homeData.hero.episode || 'Latest' }}</span>
+                            <span>|</span>
+                            <span class="border border-gray-500 px-1.5 rounded">HD</span>
+                        </div>
+                        
+                        <p class="text-gray-300 text-xs md:text-base mb-6 line-clamp-2 md:line-clamp-3 leading-relaxed max-w-xl">
+                            Tonton episode terbaru dari {{ homeData.hero.title }} subtitle Indonesia secara gratis. Streaming lancar dengan berbagai pilihan resolusi dan multi-server.
+                        </p>
+                        
+                        <div class="flex items-center gap-3">
+                            <button @click="openDetail(homeData.hero)" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 md:py-3.5 px-6 md:px-8 rounded-lg flex items-center gap-2 transition-all shadow-[0_0_15px_rgba(37,99,235,0.4)]">
+                                <i data-lucide="play" class="w-5 h-5 fill-current"></i> Mulai Nonton
+                            </button>
+                            <button @click="openDetail(homeData.hero)" class="bg-gray-800/80 hover:bg-gray-700 backdrop-blur text-white font-bold py-2.5 md:py-3.5 px-5 md:px-6 rounded-lg flex items-center gap-2 transition-all border border-gray-600">
+                                <i data-lucide="info" class="w-5 h-5"></i> <span class="hidden md:inline">Detail</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        <!-- ================= DETAIL / PLAYER VIEW (MOBILE STYLE OVERLAY) ================= -->
-        <div v-if="currentView === 'detail'" class="fixed inset-0 z-[100] bg-background overflow-y-auto flex justify-center">
-            <!-- Menyerupai tampilan Mobile/Detail dari desain yang diberikan -->
-            <div class="w-full max-w-2xl bg-card min-h-screen relative shadow-2xl flex flex-col">
+            <!-- COMPONENT REUSABLE: HORIZONTAL SCROLL LIST -->
+            <!-- 1. On Going Anime -->
+            <div id="ongoing" class="mt-8 md:mt-12 px-4 md:px-12 relative z-20 pt-16 -mt-16">
+                <div class="flex items-center justify-between mb-4 md:mb-6">
+                    <h2 class="text-xl md:text-2xl font-bold flex items-center gap-2">
+                        <i data-lucide="play-circle" class="w-6 h-6 text-blue-500"></i> On Going Terbaru
+                    </h2>
+                </div>
+                <div class="flex overflow-x-auto snap-x snap-mandatory gap-3 md:gap-5 pb-6 hide-scrollbar">
+                    <div v-for="(anime, idx) in homeData.ongoing" :key="idx" @click="openDetail(anime)" class="snap-start flex-none w-[140px] md:w-[200px] lg:w-[220px] group cursor-pointer relative">
+                        <!-- Number Badge (Desain Ref 1) -->
+                        <div v-if="idx < 10" class="absolute -left-2 top-2 bg-blue-600 text-white font-black text-lg px-3 py-1 badge-polygon z-20 shadow-lg">
+                            {{ idx + 1 }}
+                        </div>
+                        <div class="relative aspect-[3/4] rounded-xl overflow-hidden mb-3 border border-gray-800 shadow-xl group-hover:border-blue-500/50 transition-all duration-300">
+                            <!-- Overlay Play Button -->
+                            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-center justify-center backdrop-blur-[2px]">
+                                <i data-lucide="play" class="w-12 h-12 text-white fill-white shadow-2xl drop-shadow-2xl scale-75 group-hover:scale-110 transition-transform duration-300"></i>
+                            </div>
+                            <!-- Episode Badge -->
+                            <div class="absolute bottom-2 left-2 bg-black/80 backdrop-blur px-2 py-1 rounded text-[10px] font-bold text-white z-10">
+                                {{ anime.episode }}
+                            </div>
+                            <img :src="anime.img" class="object-cover w-full h-full group-hover:scale-110 transition duration-700" loading="lazy" />
+                        </div>
+                        <h3 class="font-semibold text-sm md:text-base line-clamp-2 group-hover:text-blue-400 transition leading-snug">{{ anime.title }}</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Completed Anime -->
+            <div id="completed" class="mt-6 md:mt-10 px-4 md:px-12 pt-16 -mt-16">
+                <div class="flex items-center justify-between mb-4 md:mb-6">
+                    <h2 class="text-xl md:text-2xl font-bold flex items-center gap-2">
+                        <i data-lucide="check-circle" class="w-6 h-6 text-green-500"></i> Anime Tamat (Completed)
+                    </h2>
+                </div>
+                <div class="flex overflow-x-auto snap-x snap-mandatory gap-3 md:gap-5 pb-6 hide-scrollbar">
+                    <div v-for="(anime, idx) in homeData.completed" :key="'comp'+idx" @click="openDetail(anime)" class="snap-start flex-none w-[140px] md:w-[200px] group cursor-pointer">
+                        <div class="relative aspect-[3/4] rounded-xl overflow-hidden mb-3 border border-gray-800 group-hover:border-green-500/50 transition-all duration-300">
+                            <div class="absolute top-2 right-2 bg-black/80 rounded px-1.5 py-0.5 text-[10px] font-bold text-yellow-400 flex items-center gap-1 z-10">
+                                <i data-lucide="star" class="w-3 h-3 fill-current"></i> {{ anime.score || '?' }}
+                            </div>
+                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-center justify-center">
+                                <i data-lucide="play" class="w-12 h-12 text-white fill-white scale-75 group-hover:scale-110 transition-transform duration-300"></i>
+                            </div>
+                            <img :src="anime.img" class="object-cover w-full h-full group-hover:scale-110 transition duration-700" loading="lazy" />
+                        </div>
+                        <h3 class="font-semibold text-sm md:text-base line-clamp-2 group-hover:text-green-400 transition">{{ anime.title }}</h3>
+                        <p class="text-[10px] text-gray-500 mt-1 uppercase font-bold">{{ anime.type || 'TV' }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Anime Movie -->
+            <div id="movie" class="mt-6 md:mt-10 px-4 md:px-12 mb-10 pt-16 -mt-16">
+                <div class="flex items-center justify-between mb-4 md:mb-6">
+                    <h2 class="text-xl md:text-2xl font-bold flex items-center gap-2">
+                        <i data-lucide="film" class="w-6 h-6 text-purple-500"></i> Anime Movie Spesial
+                    </h2>
+                </div>
+                <div class="flex overflow-x-auto snap-x snap-mandatory gap-3 md:gap-5 pb-6 hide-scrollbar">
+                    <div v-for="(anime, idx) in homeData.movies" :key="'mov'+idx" @click="openDetail(anime)" class="snap-start flex-none w-[200px] md:w-[280px] group cursor-pointer">
+                        <div class="relative aspect-[16/9] rounded-xl overflow-hidden mb-3 border border-gray-800 group-hover:border-purple-500/50 transition-all duration-300 shadow-lg">
+                            <div class="absolute top-2 left-2 bg-purple-600 text-white px-2 py-0.5 rounded text-[10px] font-bold z-10">MOVIE</div>
+                            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-center justify-center">
+                                <i data-lucide="play" class="w-12 h-12 text-white fill-white scale-75 group-hover:scale-110 transition-transform duration-300"></i>
+                            </div>
+                            <img :src="anime.img" class="object-cover w-full h-full group-hover:scale-110 transition duration-700" loading="lazy" />
+                        </div>
+                        <h3 class="font-semibold text-sm md:text-base line-clamp-2 group-hover:text-purple-400 transition">{{ anime.title }}</h3>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Footer Sederhana -->
+            <footer class="border-t border-gray-800 mt-12 py-8 text-center text-gray-500 text-sm">
+                <p>&copy; 2026 TPLAY Anime. Menggunakan API Animekudesu.</p>
+            </footer>
+        </div>
+        </transition>
+
+
+        <!-- ================= DETAIL & PLAYER VIEW ================= -->
+        <transition name="fade">
+        <div v-if="currentView === 'detail'" class="fixed inset-0 z-[100] bg-background overflow-y-auto">
+            <div class="w-full max-w-4xl mx-auto bg-card min-h-screen relative shadow-2xl flex flex-col md:border-x md:border-gray-800">
                 
                 <!-- Navbar Player Overlay -->
-                <div class="absolute top-0 w-full z-20 flex justify-between items-center p-4 bg-gradient-to-b from-black/80 to-transparent">
-                    <button @click="closeDetail" class="w-10 h-10 rounded-full bg-black/40 backdrop-blur flex items-center justify-center hover:bg-blue-500 transition">
-                        <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                <div class="absolute top-0 w-full z-30 flex justify-between items-center p-4 bg-gradient-to-b from-black/90 to-transparent">
+                    <button @click="changeView('home')" class="w-10 h-10 rounded-full bg-black/50 backdrop-blur flex items-center justify-center hover:bg-blue-600 transition shadow-lg border border-gray-700">
+                        <i data-lucide="arrow-left" class="w-5 h-5 text-white"></i>
                     </button>
                     <div class="flex gap-3">
-                        <button class="w-10 h-10 rounded-full bg-black/40 backdrop-blur flex items-center justify-center hover:bg-gray-700 transition">
-                            <i data-lucide="share-2" class="w-5 h-5"></i>
-                        </button>
-                        <button class="w-10 h-10 rounded-full bg-black/40 backdrop-blur flex items-center justify-center hover:bg-red-500/20 transition group">
-                            <i data-lucide="heart" class="w-5 h-5 group-hover:text-red-500 group-hover:fill-red-500 transition"></i>
+                        <button class="w-10 h-10 rounded-full bg-black/50 backdrop-blur flex items-center justify-center hover:bg-red-500 transition group border border-gray-700">
+                            <i data-lucide="heart" class="w-5 h-5 group-hover:fill-white text-white transition"></i>
                         </button>
                     </div>
                 </div>
 
-                <!-- Video Player Area -->
-                <div class="relative w-full aspect-video bg-black flex items-center justify-center border-b border-gray-800">
-                    <div v-if="isVideoLoading" class="flex flex-col items-center text-blue-500">
-                        <i data-lucide="loader-2" class="w-10 h-10 animate-spin mb-3"></i>
-                        <span class="text-sm font-medium">Memuat server video...</span>
+                <!-- ======== VIDEO PLAYER AREA ======== -->
+                <div class="relative w-full aspect-video bg-black flex items-center justify-center border-b border-gray-800 mt-0 lg:mt-0 pt-0">
+                    
+                    <!-- Loading Video / Server -->
+                    <div v-if="isVideoLoading" class="flex flex-col items-center text-blue-500 z-20">
+                        <i data-lucide="loader-2" class="w-12 h-12 animate-spin mb-3"></i>
+                        <span class="text-sm font-medium tracking-widest uppercase">Menghubungkan ke Server...</span>
                     </div>
-                    <iframe v-else-if="videoUrl" :src="videoUrl" class="w-full h-full" allowfullscreen allow="autoplay"></iframe>
-                    <div v-else class="text-gray-500 text-sm flex flex-col items-center">
-                        <img :src="detailData?.img" class="absolute inset-0 object-cover w-full h-full opacity-30 blur-sm" v-if="detailData">
-                        <i data-lucide="play-circle" class="w-16 h-16 opacity-50 mb-2 relative z-10"></i>
-                        <span class="relative z-10">Pilih episode di bawah untuk memutar</span>
+                    
+                    <!-- iFrame Player -->
+                    <iframe v-else-if="videoUrl" :src="videoUrl" class="absolute inset-0 w-full h-full z-10" allowfullscreen allow="autoplay"></iframe>
+                    
+                    <!-- Placeholder sebelum episode dipilih -->
+                    <div v-else class="text-gray-400 text-sm flex flex-col items-center z-20 px-6 text-center">
+                        <img :src="detailData?.img" class="absolute inset-0 object-cover w-full h-full opacity-20 blur-md" v-if="detailData">
+                        <i data-lucide="play-circle" class="w-16 h-16 opacity-50 mb-4 relative z-10 text-white"></i>
+                        <span class="relative z-10 text-lg font-bold text-white mb-2">Belum ada video diputar</span>
+                        <span class="relative z-10">Pilih episode pada daftar di bawah untuk memulai streaming.</span>
                     </div>
                 </div>
 
-                <!-- Content Area -->
-                <div v-if="isDetailLoading" class="p-10 flex justify-center flex-1">
-                    <i data-lucide="loader-2" class="w-8 h-8 animate-spin text-blue-500"></i>
+                <!-- ======== MULTI-SERVER SELECTION ======== -->
+                <div v-if="videoServers.length > 0 && !isVideoLoading" class="px-4 py-3 bg-gray-900 border-b border-gray-800">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i data-lucide="server" class="w-4 h-4 text-blue-500"></i>
+                        <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Pilih Server (Jika Video Error)</span>
+                    </div>
+                    <div class="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
+                        <button v-for="(server, idx) in videoServers" :key="idx" 
+                                @click="switchServer(server)"
+                                :class="activeServer === server ? 'bg-blue-600 text-white border-blue-500 shadow-lg' : 'bg-card text-gray-400 border-gray-700 hover:text-white hover:border-gray-500'"
+                                class="flex-none px-4 py-1.5 rounded-full text-xs font-semibold border transition-all flex items-center gap-1.5">
+                            <span v-if="activeServer === server" class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                            {{ server.title || `Server ${idx + 1}` }}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ======== CONTENT AREA ======== -->
+                <div v-if="isDetailLoading" class="p-10 flex flex-col items-center justify-center flex-1">
+                    <i data-lucide="loader-2" class="w-10 h-10 animate-spin text-blue-600 mb-4"></i>
+                    <p class="text-gray-400 font-medium">Mencari Data Anime...</p>
                 </div>
                 
-                <div v-else-if="detailData" class="p-5 flex-1 pb-32">
-                    <h1 class="text-2xl md:text-3xl font-bold mb-2">{{ detailData.title }}</h1>
-                    <p class="text-blue-400 text-sm mb-3">{{ detailData.japanese_title }}</p>
+                <div v-else-if="detailData" class="p-4 md:p-8 flex-1 pb-32">
+                    <h1 class="text-2xl md:text-4xl font-bold mb-1 leading-tight">{{ detailData.title }}</h1>
+                    <p class="text-blue-400 text-sm md:text-base font-medium mb-4 italic">{{ detailData.japanese_title }}</p>
                     
                     <!-- Metadata tags -->
-                    <div class="flex flex-wrap items-center gap-2 mb-4">
-                        <span v-for="(tag, idx) in detailData.genres" :key="idx" class="border border-gray-700 bg-background text-xs px-2.5 py-1 rounded-full text-gray-300">
-                            {{ tag.tag || tag.title }}
+                    <div class="flex flex-wrap items-center gap-2 mb-5">
+                        <span v-for="(tag, idx) in detailData.genres" :key="idx" class="bg-gray-800 text-xs px-3 py-1 rounded-full text-gray-300 font-medium border border-gray-700">
+                            {{ tag.tag || tag.title || tag }}
                         </span>
                     </div>
                     
-                    <div class="flex items-center gap-3 text-sm text-gray-400 mb-4 bg-background/50 p-3 rounded-lg border border-gray-800">
+                    <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs md:text-sm text-gray-400 mb-6 bg-gray-900/50 p-3.5 rounded-xl border border-gray-800">
                         <span class="flex items-center text-yellow-500 font-bold gap-1">
                             <i data-lucide="star" class="w-4 h-4 fill-current"></i> {{ detailData.rating || 'N/A' }}
                         </span>
-                        <span>•</span>
-                        <span>{{ detailData.type }}</span>
-                        <span>•</span>
-                        <span>{{ detailData.season || '2024' }}</span>
-                        <span>•</span>
-                        <span class="text-green-500">{{ detailData.status }}</span>
+                        <span class="hidden md:inline">•</span>
+                        <span class="flex items-center gap-1 text-white"><i data-lucide="film" class="w-4 h-4"></i> {{ detailData.type }}</span>
+                        <span class="hidden md:inline">•</span>
+                        <span class="flex items-center gap-1 text-white"><i data-lucide="calendar" class="w-4 h-4"></i> {{ detailData.season || 'Unknown' }}</span>
+                        <span class="hidden md:inline">•</span>
+                        <span class="text-green-400 font-bold uppercase">{{ detailData.status }}</span>
                     </div>
                     
                     <!-- Description -->
-                    <p class="text-sm text-gray-300 leading-relaxed mb-8 border-b border-gray-800 pb-6">
-                        {{ (detailData.descriptions && detailData.descriptions[0]) || 'Belum ada sinopsis untuk anime ini.' }}
-                    </p>
+                    <div class="mb-8">
+                        <h3 class="text-lg font-bold mb-2">Sinopsis</h3>
+                        <p class="text-sm text-gray-300 leading-relaxed text-justify">
+                            {{ (detailData.descriptions && detailData.descriptions[0]) || 'Belum ada sinopsis bahasa Indonesia untuk anime ini.' }}
+                        </p>
+                    </div>
 
                     <!-- Episode List Header -->
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-lg font-bold">Pilih Episode</h2>
-                        <div class="bg-background border border-gray-700 rounded-lg px-3 py-1.5 flex items-center gap-2 text-sm cursor-pointer">
-                            <span class="text-gray-300">Semua Episode</span>
-                            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500"></i>
-                        </div>
+                    <div class="flex items-center justify-between mb-4 bg-gray-900 p-3 rounded-t-xl border-b border-gray-800">
+                        <h2 class="text-lg font-bold flex items-center gap-2">
+                            <i data-lucide="list-video" class="w-5 h-5 text-blue-500"></i> Daftar Episode
+                        </h2>
+                        <span class="text-xs bg-gray-800 px-2 py-1 rounded text-gray-400 font-bold">{{ detailData.episodes?.length || 0 }} Episode</span>
                     </div>
 
                     <!-- Episode List Items -->
-                    <div class="space-y-3">
+                    <div class="space-y-2 mb-10">
                         <div v-for="eps in detailData.episodes" :key="eps.episode" 
                             @click="playEpisode(eps)"
-                            class="flex items-center gap-4 p-2.5 rounded-xl border transition-all cursor-pointer group"
-                            :class="selectedEpisode?.episode === eps.episode ? 'border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/5' : 'border-gray-800 bg-background hover:border-gray-600'">
+                            class="flex items-center gap-3 md:gap-4 p-2 md:p-3 rounded-xl border transition-all cursor-pointer group"
+                            :class="selectedEpisode?.episode === eps.episode ? 'border-blue-500 bg-blue-900/20 shadow-lg' : 'border-gray-800 bg-card hover:bg-gray-800 hover:border-gray-600'">
                             
-                            <!-- Thumbnail with badge -->
-                            <div class="relative w-28 aspect-video rounded-lg bg-gray-800 overflow-hidden flex-shrink-0">
-                                <div class="absolute top-1 left-1 bg-black/80 rounded px-1.5 py-0.5 text-[10px] font-bold z-10 border border-gray-700">
-                                    {{ eps.episode }}
+                            <!-- Thumbnail -->
+                            <div class="relative w-24 md:w-32 aspect-video rounded-lg bg-black overflow-hidden flex-shrink-0 border border-gray-700">
+                                <div class="absolute top-1 left-1 bg-blue-600 rounded px-1.5 py-0.5 text-[9px] md:text-[10px] font-bold z-10">
+                                    EP {{ eps.episode }}
                                 </div>
-                                <img :src="detailData.img" class="object-cover w-full h-full opacity-60 group-hover:scale-110 transition duration-300 object-top" />
+                                <img :src="detailData.img" class="object-cover w-full h-full opacity-60 group-hover:scale-110 transition duration-500 object-top" />
                                 <div class="absolute inset-0 flex items-center justify-center">
-                                    <i data-lucide="play-circle" class="w-8 h-8 opacity-80" :class="selectedEpisode?.episode === eps.episode ? 'text-blue-500 fill-white' : 'text-white group-hover:text-blue-400'"></i>
+                                    <i data-lucide="play-circle" class="w-8 h-8 opacity-90 transition-transform" :class="selectedEpisode?.episode === eps.episode ? 'text-blue-500 fill-white scale-110' : 'text-white group-hover:text-blue-400'"></i>
                                 </div>
-                                <!-- Progress Bar Mockup (From Design) -->
-                                <div v-if="selectedEpisode?.episode === eps.episode" class="absolute bottom-0 left-0 w-full h-1 bg-gray-700"><div class="h-full bg-blue-500 w-3/4"></div></div>
+                                <!-- Progress line mockup -->
+                                <div v-if="selectedEpisode?.episode === eps.episode" class="absolute bottom-0 left-0 w-full h-1 bg-gray-700"><div class="h-full bg-blue-500 w-full"></div></div>
                             </div>
                             
                             <div class="flex-1 min-w-0">
-                                <h3 class="text-sm font-medium text-white line-clamp-2 leading-snug group-hover:text-blue-400 transition" :class="{'text-blue-500': selectedEpisode?.episode === eps.episode}">
+                                <h3 class="text-sm md:text-base font-bold text-white line-clamp-2 leading-snug group-hover:text-blue-400 transition" :class="{'text-blue-500': selectedEpisode?.episode === eps.episode}">
                                     {{ eps.title || `Episode ${eps.episode}` }}
                                 </h3>
-                                <p class="text-xs text-gray-500 mt-1 flex items-center gap-1">
-                                    <i data-lucide="clock" class="w-3 h-3"></i> 24m
+                                <p class="text-[10px] md:text-xs text-gray-400 mt-1.5 flex items-center gap-3">
+                                    <span class="flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> 24m</span>
+                                    <span class="hidden md:flex items-center gap-1"><i data-lucide="calendar" class="w-3 h-3"></i> Rilis Terbaru</span>
                                 </p>
                             </div>
-                            
-                            <button class="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-blue-400 hover:bg-blue-500/10 rounded-full transition mr-1">
-                                <i data-lucide="download" class="w-5 h-5"></i>
-                            </button>
+                        </div>
+                        
+                        <div v-if="!detailData.episodes || detailData.episodes.length === 0" class="text-center py-10 text-gray-500 border border-dashed border-gray-700 rounded-xl">
+                            Belum ada episode yang tersedia untuk ditonton.
                         </div>
                     </div>
                 </div>
 
-                <!-- Sticky Bottom Button (From Design) -->
-                <div v-if="!isDetailLoading && detailData" class="fixed bottom-0 w-full max-w-2xl bg-gradient-to-t from-background via-background to-transparent p-4 pt-10 z-30">
-                    <button @click="playFirstIfNone" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(37,99,235,0.4)] transition-all">
-                        <i data-lucide="play" class="fill-current w-5 h-5"></i> Tonton Sekarang
+                <!-- Sticky Bottom Action Button -->
+                <div v-if="!isDetailLoading && detailData && !videoUrl" class="fixed bottom-0 w-full max-w-4xl bg-gradient-to-t from-black via-black/90 to-transparent p-4 pt-12 z-30 pointer-events-none">
+                    <button @click="playFirstIfNone" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(37,99,235,0.4)] transition-all pointer-events-auto text-lg">
+                        <i data-lucide="play" class="fill-current w-6 h-6"></i> TONTON EPISODE 1
                     </button>
                 </div>
             </div>
         </div>
-
+        </transition>
     </div>
 
     <!-- Application Script -->
     <script>
         const { createApp, ref, onMounted, nextTick } = Vue;
         
-        // Menggunakan Endpoint API sesuai referensi file TypeScript
         const API_BASE = 'https://api.animekudesu.web.id';
 
         createApp({
             setup() {
                 const currentView = ref('home');
-                const homeData = ref({ hero: null, trending: [], genres: [] });
+                const homeData = ref({ hero: null, ongoing: [], completed: [], movies: [], genres: [] });
                 const detailData = ref(null);
+                
+                // Player States
                 const selectedEpisode = ref(null);
+                const videoServers = ref([]);
+                const activeServer = ref(null);
                 const videoUrl = ref(null);
                 
-                const isLoading = ref(true);
+                // UI States
+                const isLoadingHome = ref(true);
                 const isDetailLoading = ref(false);
                 const isVideoLoading = ref(false);
+                const isScrolled = ref(false);
+                const isMobileMenuOpen = ref(false);
+                const searchQuery = ref('');
 
-                // Fungsi Smart Fetch (Mencegah kendala CORS bila dijalankan lokal via file://)
+                // Custom Fetcher dengan Bypass CORS fallback
                 const fetchApi = async (endpoint) => {
                     try {
                         const res = await fetch(API_BASE + endpoint);
-                        if (!res.ok) throw new Error('API down');
+                        if (!res.ok) throw new Error('API Error');
                         return await res.json();
                     } catch (e) {
-                        console.warn("Mencoba fallback proksi publik akibat limitasi CORS lokal...");
                         try {
-                            const proxyRes = await fetch('https://corsproxy.io/?' + encodeURIComponent(API_BASE + endpoint));
+                            const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(API_BASE + endpoint);
+                            const proxyRes = await fetch(proxyUrl);
                             return await proxyRes.json();
                         } catch (err) {
-                            console.error("Gagal mengambil data API:", err);
+                            console.error("Fetch failed:", err);
                             return null;
                         }
                     }
                 };
 
-                // Pengekstrak Slug Identik dengan file HomeClient.tsx
+                // Helper mendapatkan slug yang akurat dari endpoint link
                 const getSlug = (anime) => {
-                    if (anime.slug) return anime.slug.replace('/anime/', '').replace('/', '');
+                    if (anime.slug) {
+                        return anime.slug.startsWith('/') ? anime.slug.substring(1) : anime.slug;
+                    }
                     const url = anime.detail_url || anime.link || '';
-                    const parts = url.split('/').filter(Boolean);
+                    const cleanUrl = url.split('?')[0].split('#')[0];
+                    const parts = cleanUrl.split('/').filter(Boolean);
                     return parts[parts.length - 1] || '';
                 };
 
                 const loadHomeData = async () => {
-                    isLoading.value = true;
-                    // Ambil API secara paralel
-                    const [newAnime, ongoing, genresReq] = await Promise.all([
-                        fetchApi('/new-anime'),
+                    isLoadingHome.value = true;
+                    // Promise All untuk load data secara paralel agar cepat[span_5](start_span)[span_5](end_span)[span_6](start_span)[span_6](end_span)
+                    const [ongoingRes, completedRes, movieRes] = await Promise.all([
                         fetchApi('/ongoing-anime'),
-                        fetchApi('/genres')
+                        fetchApi('/completed-anime'),
+                        fetchApi('/type-anime/movie')
                     ]);
 
-                    if (newAnime?.data?.length) {
-                        homeData.value.hero = newAnime.data[0];
+                    if (ongoingRes?.data) {
+                        homeData.value.ongoing = ongoingRes.data;
+                        // Pakai anime ongoing pertama sebagai Hero Cover
+                        if (ongoingRes.data.length > 0) homeData.value.hero = ongoingRes.data[0];
                     }
-                    if (ongoing?.data?.length) {
-                        homeData.value.trending = ongoing.data.slice(0, 8);
-                    }
-                    if (genresReq?.data?.length) {
-                        homeData.value.genres = genresReq.data.slice(0, 6);
-                    }
+                    if (completedRes?.data) homeData.value.completed = completedRes.data;
+                    if (movieRes?.data) homeData.value.movies = movieRes.data;
                     
-                    isLoading.value = false;
+                    isLoadingHome.value = false;
+                    nextTick(() => lucide.createIcons());
+                };
+
+                const changeView = (view) => {
+                    currentView.value = view;
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    if(view === 'home') {
+                        videoUrl.value = null; // Stop video if returning home
+                    }
                     nextTick(() => lucide.createIcons());
                 };
 
                 const openDetail = async (anime) => {
                     const slug = getSlug(anime);
-                    if (!slug) return;
+                    if (!slug) return alert("URL Anime tidak valid.");
                     
-                    currentView.value = 'detail';
+                    changeView('detail');
                     isDetailLoading.value = true;
                     detailData.value = null;
                     selectedEpisode.value = null;
                     videoUrl.value = null;
-                    window.scrollTo(0, 0);
+                    videoServers.value = [];
+                    activeServer.value = null;
 
-                    // Panggil API detail anime
+                    // Fetch detail anime berdasarkan slug[span_7](start_span)[span_7](end_span)
                     const data = await fetchApi(`/detail-anime/${slug}`);
                     if (data) {
                         detailData.value = data;
@@ -373,43 +473,61 @@
                 const playEpisode = async (eps) => {
                     selectedEpisode.value = eps;
                     videoUrl.value = null;
+                    videoServers.value = [];
+                    activeServer.value = null;
                     isVideoLoading.value = true;
+                    
                     window.scrollTo({ top: 0, behavior: 'smooth' });
 
-                    // Ambil detail url video (iframe provider) berdasarkan spesifikasi
+                    // Ambil detail eps (untuk list provider server video)[span_8](start_span)[span_8](end_span)[span_9](start_span)[span_9](end_span)
                     const epsData = await fetchApi(eps.detail_eps);
-                    if (epsData?.videos?.length) {
-                        const videoPath = epsData.videos[0].video;
-                        const vidRes = await fetchApi(videoPath);
-                        if (vidRes?.url) {
-                            videoUrl.value = vidRes.url;
-                        }
+                    if (epsData?.videos?.length > 0) {
+                        videoServers.value = epsData.videos;
+                        // Auto Play server pertama
+                        await switchServer(epsData.videos[0]);
+                    } else {
+                        isVideoLoading.value = false;
+                        alert("Maaf, video untuk episode ini belum tersedia.");
+                    }
+                };
+
+                // Logic Multi-Server: Mengekstrak iframe url dari video path server yang dipilih[span_10](start_span)[span_10](end_span)
+                const switchServer = async (serverObj) => {
+                    activeServer.value = serverObj;
+                    isVideoLoading.value = true;
+                    videoUrl.value = null;
+
+                    const vidRes = await fetchApi(serverObj.video);
+                    if (vidRes?.url) {
+                        videoUrl.value = vidRes.url;
+                    } else {
+                        alert("Server ini sedang gangguan. Silakan coba server lain.");
                     }
                     isVideoLoading.value = false;
                 };
 
                 const playFirstIfNone = () => {
-                    if (!selectedEpisode.value && detailData.value?.episodes?.length) {
-                        playEpisode(detailData.value.episodes[0]);
-                    } else if (selectedEpisode.value) {
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    if (detailData.value?.episodes?.length > 0) {
+                        // Secara default mainkan episode terakhir (episode 1 biasanya ada di ujung array)
+                        const epsList = detailData.value.episodes;
+                        playEpisode(epsList[epsList.length - 1]);
                     }
-                };
-
-                const closeDetail = () => {
-                    currentView.value = 'home';
-                    videoUrl.value = null; 
-                    nextTick(() => lucide.createIcons());
                 };
 
                 onMounted(() => {
                     loadHomeData();
+                    // Listener scroll untuk efek navbar transparan ke solid
+                    window.addEventListener('scroll', () => {
+                        isScrolled.value = window.scrollY > 50;
+                    });
                 });
 
                 return {
-                    currentView, homeData, detailData, selectedEpisode, videoUrl,
-                    isLoading, isDetailLoading, isVideoLoading,
-                    openDetail, playEpisode, playFirstIfNone, closeDetail
+                    currentView, homeData, detailData,
+                    selectedEpisode, videoUrl, videoServers, activeServer,
+                    isLoadingHome, isDetailLoading, isVideoLoading,
+                    isScrolled, isMobileMenuOpen, searchQuery,
+                    changeView, openDetail, playEpisode, playFirstIfNone, switchServer
                 };
             }
         }).mount('#app');
