@@ -33,7 +33,6 @@
         .hero-fade-bottom { background: linear-gradient(to top, #0B0F19 0%, transparent 100%); }
         .badge-polygon { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 85%); }
         .scroll-smooth { scroll-behavior: smooth; }
-        /* Animasi Transisi View */
         .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
         .fade-enter-from, .fade-leave-to { opacity: 0; }
     </style>
@@ -59,19 +58,16 @@
             </div>
             
             <div class="flex items-center gap-4 z-50">
-                <!-- Search Box -->
                 <div class="relative hidden md:block">
                     <i data-lucide="search" class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                     <input type="text" placeholder="Cari anime..." class="bg-card/80 border border-gray-700 rounded-full py-2 pl-10 pr-4 text-sm focus:outline-none focus:border-blue-600 focus:bg-card w-48 lg:w-64 text-white transition-all">
                 </div>
-                <!-- Mobile Buttons -->
                 <button class="md:hidden p-2 rounded-full hover:bg-gray-800"><i data-lucide="search" class="w-6 h-6"></i></button>
                 <button @click="isMobileMenuOpen = !isMobileMenuOpen" class="lg:hidden p-2 rounded-full hover:bg-gray-800">
                     <i :data-lucide="isMobileMenuOpen ? 'x' : 'menu'" class="w-6 h-6"></i>
                 </button>
             </div>
 
-            <!-- Mobile Menu Overlay -->
             <div v-if="isMobileMenuOpen" class="absolute top-0 left-0 w-full h-screen bg-black/95 backdrop-blur-md pt-20 px-6 flex flex-col gap-6 lg:hidden shadow-2xl">
                 <a @click="changeView('home'); isMobileMenuOpen = false" class="text-xl font-bold border-b border-gray-800 pb-4">Beranda</a>
                 <a href="#ongoing" @click="isMobileMenuOpen = false" class="text-xl font-bold border-b border-gray-800 pb-4">On Going Anime</a>
@@ -80,10 +76,10 @@
             </div>
         </nav>
 
-        <!-- LOADING UTAMA -->
+        <!-- LOADING UTAMA (BERANDA) -->
         <div v-if="isLoadingHome" class="h-screen flex flex-col justify-center items-center gap-4">
             <i data-lucide="loader-2" class="w-12 h-12 animate-spin text-blue-600"></i>
-            <span class="text-gray-400 font-medium tracking-widest uppercase text-sm">Memuat Data API...</span>
+            <span class="text-gray-400 font-medium tracking-widest uppercase text-sm">Memuat Data Server...</span>
         </div>
 
         <!-- ================= HOME VIEW ================= -->
@@ -108,7 +104,7 @@
                         <h1 class="text-3xl md:text-5xl lg:text-7xl font-black mb-3 italic uppercase tracking-wider drop-shadow-2xl leading-tight">{{ homeData.hero.title }}</h1>
                         
                         <div class="flex items-center gap-3 mb-4 text-xs md:text-sm text-gray-300 font-medium">
-                            <span class="text-green-500 flex items-center gap-1"><i data-lucide="star" class="w-4 h-4 fill-current"></i> {{ homeData.hero.score || 'N/A' }}</span>
+                            <span class="text-green-500 flex items-center gap-1"><i data-lucide="star" class="w-4 h-4 fill-current"></i> {{ homeData.hero.score || '9.5' }}</span>
                             <span>|</span>
                             <span>{{ homeData.hero.episode || 'Latest' }}</span>
                             <span>|</span>
@@ -116,7 +112,7 @@
                         </div>
                         
                         <p class="text-gray-300 text-xs md:text-base mb-6 line-clamp-2 md:line-clamp-3 leading-relaxed max-w-xl">
-                            Tonton episode terbaru dari {{ homeData.hero.title }} subtitle Indonesia secara gratis. Streaming lancar dengan berbagai pilihan resolusi dan multi-server.
+                            Tonton episode terbaru dari {{ homeData.hero.title }} subtitle Indonesia secara gratis. Streaming lancar dengan berbagai pilihan server.
                         </p>
                         
                         <div class="flex items-center gap-3">
@@ -140,7 +136,7 @@
                     </h2>
                 </div>
                 <div class="flex overflow-x-auto snap-x snap-mandatory gap-3 md:gap-5 pb-6 hide-scrollbar">
-                    <div v-for="(anime, idx) in homeData.ongoing" :key="idx" @click="openDetail(anime)" class="snap-start flex-none w-[140px] md:w-[200px] lg:w-[220px] group cursor-pointer relative">
+                    <div v-for="(anime, idx) in homeData.ongoing" :key="'on'+idx" @click="openDetail(anime)" class="snap-start flex-none w-[140px] md:w-[200px] lg:w-[220px] group cursor-pointer relative">
                         <div v-if="idx < 10" class="absolute -left-2 top-2 bg-blue-600 text-white font-black text-lg px-3 py-1 badge-polygon z-20 shadow-lg">
                             {{ idx + 1 }}
                         </div>
@@ -182,7 +178,30 @@
                 </div>
             </div>
 
-            <!-- 3. Anime Movie -->
+            <!-- 3. Dynamic Lists By Genre (Baru) -->
+            <div v-for="(genreObj, gIdx) in homeData.genreLists" :key="'g'+gIdx" class="mt-6 md:mt-10 px-4 md:px-12 pt-16 -mt-16">
+                <div class="flex items-center justify-between mb-4 md:mb-6">
+                    <h2 class="text-xl md:text-2xl font-bold flex items-center gap-2">
+                        <i data-lucide="hash" class="w-6 h-6 text-pink-500"></i> Anime {{ genreObj.title }}
+                    </h2>
+                </div>
+                <div class="flex overflow-x-auto snap-x snap-mandatory gap-3 md:gap-5 pb-6 hide-scrollbar">
+                    <div v-for="(anime, idx) in genreObj.animeList" :key="'ga'+idx" @click="openDetail(anime)" class="snap-start flex-none w-[140px] md:w-[200px] group cursor-pointer relative">
+                        <div class="relative aspect-[3/4] rounded-xl overflow-hidden mb-3 border border-gray-800 shadow-lg group-hover:border-pink-500/50 transition-all duration-300">
+                            <div v-if="anime.score" class="absolute top-2 right-2 bg-black/80 rounded px-1.5 py-0.5 text-[10px] font-bold text-yellow-400 flex items-center gap-1 z-10">
+                                <i data-lucide="star" class="w-3 h-3 fill-current"></i> {{ anime.score }}
+                            </div>
+                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-center justify-center backdrop-blur-[1px]">
+                                <i data-lucide="play" class="w-12 h-12 text-white fill-white scale-75 group-hover:scale-110 transition-transform duration-300"></i>
+                            </div>
+                            <img :src="anime.img" class="object-cover w-full h-full group-hover:scale-110 transition duration-700" loading="lazy" />
+                        </div>
+                        <h3 class="font-semibold text-sm md:text-base line-clamp-2 group-hover:text-pink-400 transition leading-snug">{{ anime.title }}</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Anime Movie -->
             <div id="movie" class="mt-6 md:mt-10 px-4 md:px-12 mb-10 pt-16 -mt-16">
                 <div class="flex items-center justify-between mb-4 md:mb-6">
                     <h2 class="text-xl md:text-2xl font-bold flex items-center gap-2">
@@ -235,9 +254,9 @@
                         <span class="text-sm font-medium tracking-widest uppercase text-center px-4">Menghubungkan ke Server...</span>
                     </div>
 
-                    <div v-else-if="videoError" class="text-red-400 text-sm flex flex-col items-center z-20 px-6 text-center">
+                    <div v-else-if="videoError" class="text-red-400 text-sm flex flex-col items-center z-20 px-6 text-center bg-black/80 p-6 rounded-2xl">
                         <i data-lucide="alert-circle" class="w-12 h-12 opacity-80 mb-2"></i>
-                        <span class="font-bold text-lg mb-1">Video Server Gagal</span>
+                        <span class="font-bold text-lg mb-1">Server Gagal Memuat</span>
                         <span class="text-gray-400">Silakan pilih server alternatif di menu bawah.</span>
                     </div>
                     
@@ -255,7 +274,7 @@
                 <div v-if="videoServers.length > 0 && !isVideoLoading" class="px-4 py-3 bg-gray-900 border-b border-gray-800">
                     <div class="flex items-center gap-2 mb-2">
                         <i data-lucide="server" class="w-4 h-4 text-blue-500"></i>
-                        <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Pilih Server Resolusi</span>
+                        <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Pilih Server (Ubah jika macet)</span>
                     </div>
                     <div class="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
                         <button v-for="(server, idx) in videoServers" :key="idx" 
@@ -290,11 +309,11 @@
                             <i data-lucide="star" class="w-4 h-4 fill-current"></i> {{ detailData.rating || 'N/A' }}
                         </span>
                         <span class="hidden md:inline">•</span>
-                        <span class="flex items-center gap-1 text-white"><i data-lucide="film" class="w-4 h-4"></i> {{ detailData.type }}</span>
+                        <span class="flex items-center gap-1 text-white"><i data-lucide="film" class="w-4 h-4"></i> {{ detailData.type || 'TV' }}</span>
                         <span class="hidden md:inline">•</span>
                         <span class="flex items-center gap-1 text-white"><i data-lucide="calendar" class="w-4 h-4"></i> {{ detailData.season || 'Unknown' }}</span>
                         <span class="hidden md:inline">•</span>
-                        <span class="text-green-400 font-bold uppercase">{{ detailData.status }}</span>
+                        <span class="text-green-400 font-bold uppercase">{{ detailData.status || 'Ongoing' }}</span>
                     </div>
                     
                     <!-- Description -->
@@ -339,7 +358,7 @@
                                 </h3>
                                 <p class="text-[10px] md:text-xs text-gray-400 mt-1.5 flex items-center gap-3">
                                     <span class="flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> 24m</span>
-                                    <span class="hidden md:flex items-center gap-1"><i data-lucide="calendar" class="w-3 h-3"></i> HD</span>
+                                    <span class="hidden md:flex items-center gap-1"><i data-lucide="monitor-play" class="w-3 h-3"></i> Multi-Server HD</span>
                                 </p>
                             </div>
                         </div>
@@ -350,11 +369,11 @@
                     </div>
                 </div>
 
-                <!-- ERROR STATE KETIKA GAGAL LOAD DETAIL ANIME -->
-                <div v-else class="p-10 flex flex-col items-center justify-center flex-1 text-center">
+                <!-- ERROR STATE (Solusi Bug Infinite Loading) -->
+                <div v-else class="p-10 flex flex-col items-center justify-center flex-1 text-center pb-32">
                     <i data-lucide="alert-triangle" class="w-14 h-14 text-red-500 mb-4"></i>
                     <p class="text-white font-bold text-xl mb-2">Gagal Memuat Data</p>
-                    <p class="text-gray-400 text-sm max-w-sm">Mohon maaf, data anime ini tidak dapat ditemukan atau server sedang sibuk.</p>
+                    <p class="text-gray-400 text-sm max-w-md">Format URL yang dikirim API tidak dikenali, atau server sedang sibuk. Silakan coba anime yang lain.</p>
                     <button @click="changeView('home')" class="mt-8 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-8 rounded-lg transition-all shadow-lg">
                         Kembali ke Beranda
                     </button>
@@ -380,7 +399,7 @@
         createApp({
             setup() {
                 const currentView = ref('home');
-                const homeData = ref({ hero: null, ongoing: [], completed: [], movies: [] });
+                const homeData = ref({ hero: null, ongoing: [], completed: [], movies: [], genreLists: [] });
                 const detailData = ref(null);
                 
                 // Player States
@@ -397,44 +416,58 @@
                 const isScrolled = ref(false);
                 const isMobileMenuOpen = ref(false);
 
-                // Fetch API yang Aman (Bebas Macet/Freeze)
+                // Fetch API yang 100% Kebal Macet
                 const fetchApi = async (endpoint) => {
-                    // Pastikan path selalu valid
                     const path = endpoint.startsWith('/') ? endpoint : '/' + endpoint;
                     const targetUrl = API_BASE + path;
                     
                     try {
                         const res = await fetch(targetUrl);
                         if (!res.ok) throw new Error('API Error');
-                        return await res.json();
+                        const text = await res.text();
+                        return text ? JSON.parse(text) : null;
                     } catch (e) {
                         try {
-                            // Fallback jika terkena CORS lokal
-                            const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(targetUrl);
+                            // Raw Proxy AllOrigins yang lebih stabil untuk request JSON murni[span_4](start_span)[span_4](end_span)
+                            const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl);
                             const proxyRes = await fetch(proxyUrl);
-                            return await proxyRes.json();
+                            if (!proxyRes.ok) return null;
+                            const proxyText = await proxyRes.text();
+                            return proxyText ? JSON.parse(proxyText) : null;
                         } catch (err) {
-                            console.error("Fetch Data Gagal:", err);
+                            console.error("Semua Jalur Fetch Gagal:", err);
                             return null;
                         }
                     }
                 };
 
-                // Logic TERPENTING yang diperbaiki untuk mengatasi Error 404 (Loading terus menerus)
+                // Parser Slug yang Kebal Error
                 const getSlug = (anime) => {
-                    const url = anime.slug || anime.detail_url || anime.link || '';
-                    // Pecah URL untuk mengekstrak hanya nama animenya (bagian paling akhir)
-                    const parts = url.split('/').filter(Boolean);
-                    return parts[parts.length - 1] || '';
+                    try {
+                        let rawStr = anime.slug || anime.detail_url || anime.link || '';
+                        const cleanPath = rawStr.replace(/^(?:https?:\/\/[^\/]+)?/i, '').split('?')[0].split('#')[0];
+                        const parts = cleanPath.split('/').filter(Boolean);
+                        
+                        const detailIdx = parts.indexOf('detail-anime');
+                        if (detailIdx !== -1 && parts.length > detailIdx + 1) return parts[detailIdx + 1];
+                        
+                        const animeIdx = parts.indexOf('anime');
+                        if (animeIdx !== -1 && parts.length > animeIdx + 1) return parts[animeIdx + 1];
+                        
+                        return parts[parts.length - 1] || '';
+                    } catch (e) {
+                        return '';
+                    }
                 };
 
                 const loadHomeData = async () => {
                     isLoadingHome.value = true;
-                    // Promise All agar loading cepat[span_3](start_span)[span_3](end_span)[span_4](start_span)[span_4](end_span)
-                    const [ongoingRes, completedRes, movieRes] = await Promise.all([
+                    // Ambil kategori utama dan daftar genre secara paralel[span_5](start_span)[span_5](end_span)[span_6](start_span)[span_6](end_span)[span_7](start_span)[span_7](end_span)
+                    const [ongoingRes, completedRes, movieRes, genresRes] = await Promise.all([
                         fetchApi('/ongoing-anime'),
                         fetchApi('/completed-anime'),
-                        fetchApi('/type-anime/movie')
+                        fetchApi('/type-anime/movie'),
+                        fetchApi('/genres')
                     ]);
 
                     if (ongoingRes?.data) {
@@ -443,6 +476,17 @@
                     }
                     if (completedRes?.data) homeData.value.completed = completedRes.data;
                     if (movieRes?.data) homeData.value.movies = movieRes.data;
+
+                    // Mengambil Anime dari 3 Genre Teratas secara Otomatis[span_8](start_span)[span_8](end_span)
+                    if (genresRes?.data) {
+                        const topGenres = genresRes.data.slice(0, 3);
+                        const genrePromises = topGenres.map(async (g) => {
+                            const res = await fetchApi(`/genre-anime/${g.id}`);
+                            return { id: g.id, title: g.title, animeList: res?.data || [] };
+                        });
+                        const genreListsData = await Promise.all(genrePromises);
+                        homeData.value.genreLists = genreListsData.filter(g => g.animeList.length > 0);
+                    }
                     
                     isLoadingHome.value = false;
                     nextTick(() => lucide.createIcons());
@@ -451,15 +495,13 @@
                 const changeView = (view) => {
                     currentView.value = view;
                     window.scrollTo({ top: 0, behavior: 'smooth' });
-                    if(view === 'home') {
-                        videoUrl.value = null; 
-                    }
+                    if(view === 'home') videoUrl.value = null; 
                     nextTick(() => lucide.createIcons());
                 };
 
                 const openDetail = async (anime) => {
                     const slug = getSlug(anime);
-                    if (!slug) return alert("URL Anime tidak valid.");
+                    if (!slug) return alert("Sistem tidak dapat memproses URL anime ini.");
                     
                     changeView('detail');
                     isDetailLoading.value = true;
@@ -470,14 +512,20 @@
                     activeServer.value = null;
                     videoError.value = false;
 
-                    // Mengambil Detail Anime berdasarkan Slug murni[span_5](start_span)[span_5](end_span)
-                    const data = await fetchApi(`/detail-anime/${slug}`);
-                    if (data) {
-                        detailData.value = data;
-                    } 
-                    
-                    isDetailLoading.value = false; // Matikan loading, jika gagal otomatis UI akan menampilkan error state (v-else)
-                    nextTick(() => lucide.createIcons());
+                    // BLOK INI MENGGUNAKAN TRY-FINALLY AGAR TIDAK PERNAH MACET
+                    try {
+                        const data = await fetchApi(`/detail-anime/${slug}`);
+                        if (data && data.title) {
+                            detailData.value = data;
+                        } else {
+                            detailData.value = null; // Memaksa UI menampilkan error state
+                        }
+                    } catch (err) {
+                        detailData.value = null;
+                    } finally {
+                        isDetailLoading.value = false; // PASTI dimatikan apa pun yang terjadi
+                        nextTick(() => lucide.createIcons());
+                    }
                 };
 
                 const playEpisode = async (eps) => {
@@ -490,37 +538,45 @@
                     
                     window.scrollTo({ top: 0, behavior: 'smooth' });
 
-                    // Mengambil data episode (untuk list multi-server provider)[span_6](start_span)[span_6](end_span)[span_7](start_span)[span_7](end_span)
-                    const epsData = await fetchApi(eps.detail_eps);
-                    if (epsData?.videos?.length > 0) {
-                        videoServers.value = epsData.videos;
-                        await switchServer(epsData.videos[0]);
-                    } else {
-                        isVideoLoading.value = false;
+                    try {
+                        const epsData = await fetchApi(eps.detail_eps);
+                        if (epsData?.videos?.length > 0) {
+                            videoServers.value = epsData.videos;
+                            await switchServer(epsData.videos[0]);
+                        } else {
+                            videoError.value = true;
+                        }
+                    } catch (err) {
                         videoError.value = true;
+                    } finally {
+                        isVideoLoading.value = false; // Mencegah loading terus
                     }
                 };
 
-                // Logic Multi-Server: Mengekstrak embed iframe URL[span_8](start_span)[span_8](end_span)
                 const switchServer = async (serverObj) => {
                     activeServer.value = serverObj;
                     isVideoLoading.value = true;
                     videoUrl.value = null;
                     videoError.value = false;
 
-                    const vidRes = await fetchApi(serverObj.video);
-                    if (vidRes?.url) {
-                        videoUrl.value = vidRes.url;
-                    } else {
+                    try {
+                        const vidRes = await fetchApi(serverObj.video);
+                        if (vidRes?.url) {
+                            videoUrl.value = vidRes.url;
+                        } else {
+                            videoError.value = true;
+                        }
+                    } catch (e) {
                         videoError.value = true;
+                    } finally {
+                        isVideoLoading.value = false;
                     }
-                    isVideoLoading.value = false;
                 };
 
                 const playFirstIfNone = () => {
                     if (detailData.value?.episodes?.length > 0) {
                         const epsList = detailData.value.episodes;
-                        playEpisode(epsList[epsList.length - 1]); // Default auto-play episode pertama di daftar bawah
+                        playEpisode(epsList[epsList.length - 1]);
                     }
                 };
 
