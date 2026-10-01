@@ -31,126 +31,52 @@
 </head>
 <body class="antialiased selection:bg-primary selection:text-white">
 
+    <!-- Kerangka Landing Page langsung dirender tanpa menunggu API -->
     <div id="app" class="w-full min-h-screen relative pb-24">
-        <div class="h-screen flex flex-col items-center justify-center">
-            <p class="text-gray-400 text-sm animate-pulse">Menghubungkan ke API...</p>
+        <!-- Navbar Langsung Muncul -->
+        <nav class="absolute top-0 w-full z-50 px-4 py-5 md:px-12 flex justify-between items-center bg-gradient-to-b from-black/90 to-transparent">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="goHome()">
+                <i data-lucide="play" class="text-primary fill-primary w-7 h-7 md:w-8 md:h-8"></i>
+                <span class="text-xl md:text-2xl font-extrabold tracking-wide">TPLAY</span>
+            </div>
+        </nav>
+
+        <!-- Container Konten Utama -->
+        <div id="main-content" class="pt-20">
+            <div id="section-new" class="px-4 md:px-12 mt-4">
+                <h2 class="text-lg md:text-xl font-bold flex items-center gap-2 mb-4">
+                    <i data-lucide="flame" class="text-[#FF4500] fill-[#FF4500]"></i> Rilis Terbaru
+                </h2>
+                <div id="list-new" class="flex overflow-x-auto gap-3 hide-scroll pb-4">
+                    <p class="text-xs text-gray-500 animate-pulse">Memuat data latar belakang...</p>
+                </div>
+            </div>
+
+            <div id="section-ongoing" class="px-4 md:px-12 mt-8">
+                <h2 class="text-lg md:text-xl font-bold flex items-center gap-2 mb-4">
+                    <i data-lucide="film" class="text-primary"></i> On Going Anime
+                </h2>
+                <div id="list-ongoing" class="flex overflow-x-auto gap-3 hide-scroll pb-4">
+                    <p class="text-xs text-gray-500 animate-pulse">Memuat data latar belakang...</p>
+                </div>
+            </div>
+
+            <div id="section-completed" class="px-4 md:px-12 mt-8">
+                <h2 class="text-lg md:text-xl font-bold flex items-center gap-2 mb-4">
+                    <i data-lucide="check-circle" class="text-green-500"></i> Completed Anime
+                </h2>
+                <div id="list-completed" class="flex overflow-x-auto gap-3 hide-scroll pb-4">
+                    <p class="text-xs text-gray-500 animate-pulse">Memuat data latar belakang...</p>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
         const API_URL = 'https://api.animekudesu.web.id';
-        
-        const state = {
-            view: 'home',
-            isLoading: true,
-            error: null,
-            homeData: { newAnime: [], ongoing: [], completed: [], movies: [] },
-            detail: null,
-            activeVideo: { isLoading: false, url: null, error: null }
-        };
 
-        // Fungsi fetch dengan timeout agar tidak infinite loading jika API lambat/diblokir
-        async function fetchWithTimeout(url, options = {}, timeout = 8000) {
-            const controller = new AbortController();
-            const id = setTimeout(() => controller.abort(), timeout);
-            try {
-                const response = await fetch(url, { ...options, signal: controller.signal });
-                clearTimeout(id);
-                return response;
-            } catch (error) {
-                clearTimeout(id);
-                throw error;
-            }
-        }
-
-        async function fetchHomeData() {
-            state.isLoading = true; 
-            state.error = null; 
-            render();
-            
-            try {
-                const results = await Promise.allSettled([
-                    fetchWithTimeout(`${API_URL}/new-anime`),
-                    fetchWithTimeout(`${API_URL}/ongoing-anime`),
-                    fetchWithTimeout(`${API_URL}/completed-anime`),
-                    fetchWithTimeout(`${API_URL}/type-anime/movie`)
-                ]);
-
-                if (results[0].status === 'fulfilled' && results[0].value.ok) {
-                    const d = await results[0].value.json();
-                    state.homeData.newAnime = d.data || [];
-                }
-                if (results[1].status === 'fulfilled' && results[1].value.ok) {
-                    const d = await results[1].value.json();
-                    state.homeData.ongoing = d.data || [];
-                }
-                if (results[2].status === 'fulfilled' && results[2].value.ok) {
-                    const d = await results[2].value.json();
-                    state.homeData.completed = d.data || [];
-                }
-                if (results[3].status === 'fulfilled' && results[3].value.ok) {
-                    const d = await results[3].value.json();
-                    state.homeData.movies = d.data || [];
-                }
-
-                state.view = 'home';
-            } catch (err) {
-                state.error = "Gagal terhubung ke server API. Periksa koneksi atau kebijakan CORS domain Anda.";
-            } finally {
-                state.isLoading = false;
-                render();
-            }
-        }
-
-        async function fetchDetailData(slugOrLink) {
-            state.isLoading = true; 
-            state.error = null; 
-            state.view = 'detail';
-            state.activeVideo = { isLoading: false, url: null, error: null };
-            window.scrollTo(0, 0); 
-            render();
-            
-            try {
-                let slug = slugOrLink;
-                if (slug && slug.includes('/')) slug = slug.split('/').filter(Boolean).pop();
-
-                const res = await fetchWithTimeout(`${API_URL}/detail-anime/${slug}`);
-                if (!res.ok) throw new Error('Gagal mengambil detail anime');
-                
-                state.detail = await res.json();
-            } catch (err) {
-                state.error = err.message;
-            } finally {
-                state.isLoading = false;
-                render();
-            }
-        }
-
-        async function playEpisode(detailEpsUrl) {
-            state.activeVideo = { isLoading: true, url: null, error: null };
-            render(); 
-            
-            try {
-                const epsRes = await fetchWithTimeout(`${API_URL}${detailEpsUrl}`);
-                if (!epsRes.ok) throw new Error('Gagal mengambil data episode');
-                const epsData = await epsRes.json();
-                
-                const videoPath = epsData?.videos?.[0]?.video;[span_1](start_span)[span_1](end_span)
-                if (!videoPath) throw new Error('Server video tidak tersedia.');
-
-                const vidRes = await fetchWithTimeout(`${API_URL}${videoPath}`);
-                if (!vidRes.ok) throw new Error('Gagal membuka koneksi ke server video.');
-                const vidData = await vidRes.json();
-                
-                if (!vidData.url) throw new Error('URL pemutaran video kosong.');
-
-                state.activeVideo = { isLoading: false, url: vidData.url, error: null };
-            } catch (err) {
-                state.activeVideo = { isLoading: false, url: null, error: err.message };
-            } finally {
-                render();
-                document.getElementById('video-player-area')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
+        function goHome() {
+            window.location.reload();
         }
 
         function extractSlug(link) {
@@ -158,157 +84,108 @@
             return link.split('/').filter(Boolean).pop();
         }
 
-        function renderNavbar() {
-            return `
-                <nav class="absolute top-0 w-full z-50 px-4 py-5 md:px-12 flex justify-between items-center bg-gradient-to-b from-black/90 to-transparent">
-                    <div class="flex items-center gap-2 cursor-pointer" onclick="fetchHomeData()">
-                        <i data-lucide="play" class="text-primary fill-primary w-7 h-7 md:w-8 md:h-8"></i>
-                        <span class="text-xl md:text-2xl font-extrabold tracking-wide">TPLAY</span>
-                    </div>
-                </nav>
-            `;
-        }
-
-        function renderHorizontalList(title, dataArray, iconName, iconColor) {
-            if (!dataArray || dataArray.length === 0) return '';
-            return `
-                <div class="px-4 md:px-12 mt-8">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-lg md:text-xl font-bold flex items-center gap-2">
-                            <i data-lucide="${iconName}" class="${iconColor}"></i> ${title}
-                        </h2>
-                    </div>
-                    <div class="flex overflow-x-auto gap-3 hide-scroll pb-4 snap-x">
-                        ${dataArray.map((anime) => `
-                            <div class="w-[140px] md:w-[180px] shrink-0 relative cursor-pointer group snap-start" onclick="fetchDetailData('${extractSlug(anime.slug || anime.link)}')">
-                                <div class="overflow-hidden rounded-xl border border-gray-800 aspect-[3/4] relative bg-secondary">
-                                    <img src="${anime.img}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="Poster">
-                                    <div class="absolute top-2 right-2 bg-black/80 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] font-bold border border-gray-700">
-                                        ${anime.type || 'TV'}
-                                    </div>
-                                </div>
-                                <h3 class="mt-2 font-semibold text-sm line-clamp-1 group-hover:text-primary transition">${anime.title}</h3>
-                                <p class="text-xs text-gray-400 mt-1">${anime.episode \vert{}\vert{} 'Ep ?'} • ⭐ ${anime.score || '-'}</p>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
-        }
-
-        function renderDetail() {
-            const anime = state.detail;
-            if (!anime) return '';
-
-            const episodes = anime.episodes || [];
-            const tags = anime.genres ? anime.genres.map(g => g.tag) : [];
+        // Render elemen kartu anime secara dinamis
+        function populateList(elementId, dataArray) {
+            const container = document.getElementById(elementId);
+            if (!container) return;
             
-            let videoAreaHTML = '';
-            if (state.activeVideo.isLoading) {
-                videoAreaHTML = `<div class="absolute inset-0 flex flex-col items-center justify-center bg-black/90 z-20"><i data-lucide="loader-2" class="w-10 h-10 animate-spin text-primary mb-2"></i><p class="text-gray-300 text-sm">Menyiapkan video...</p></div>`;
-            } else if (state.activeVideo.error) {
-                videoAreaHTML = `<div class="absolute inset-0 flex flex-col items-center justify-center bg-gray-900 z-20 px-4 text-center"><p class="text-red-400 font-medium mb-1">Gagal Memutar Video</p><p class="text-gray-400 text-xs">${state.activeVideo.error}</p></div>`;
-            } else if (state.activeVideo.url) {
-                videoAreaHTML = `<iframe src="${state.activeVideo.url}" class="absolute inset-0 w-full h-full border-0 z-20" allowfullscreen loading="lazy"></iframe>`;
-            } else {
-                videoAreaHTML = `
-                    <div class="absolute inset-0 flex items-center justify-center z-20">
-                        <button onclick="${episodes.length > 0 ? `playEpisode('${episodes[0].detail_eps}')` : ''}" class="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center hover:bg-primary/80 transition group border border-white/10 shadow-lg">
-                            <i data-lucide="play" class="w-8 h-8 fill-primary text-primary group-hover:fill-white group-hover:text-white transition-colors translate-x-0.5"></i>
-                        </button>
-                    </div>
-                `;
+            if (!dataArray || dataArray.length === 0) {
+                container.innerHTML = `<p class="text-xs text-gray-500">Data gagal dimuat (CORS / Jaringan)</p>`;
+                return;
             }
 
-            return `
-                <div class="bg-background min-h-screen pb-20">
-                    <div class="fixed top-0 w-full z-50 p-4">
-                        <button onclick="fetchHomeData()" class="w-10 h-10 bg-black/50 rounded-full backdrop-blur-sm flex items-center justify-center hover:bg-black/80 transition">
-                            <i data-lucide="arrow-left" class="w-5 h-5 text-white"></i>
-                        </button>
+            container.innerHTML = dataArray.map(anime => `
+                <div class="w-[140px] md:w-[180px] shrink-0 relative cursor-pointer group snap-start" onclick="loadDetail('${extractSlug(anime.slug || anime.link)}')">
+                    <div class="overflow-hidden rounded-xl border border-gray-800 aspect-[3/4] relative bg-secondary">
+                        <img src="${anime.img}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="Poster">
+                        <div class="absolute top-2 right-2 bg-black/80 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] font-bold border border-gray-700">
+                            ${anime.type || 'TV'}
+                        </div>
                     </div>
+                    <h3 class="mt-2 font-semibold text-sm line-clamp-1 group-hover:text-primary transition">${anime.title}</h3>
+                    <p class="text-xs text-gray-400 mt-1">${anime.episode || 'Ep ?'} • ⭐ ${anime.score || '-'}</p>
+                </div>
+            `).join('');
+            
+            if (window.lucide) window.lucide.createIcons();
+        }
 
-                    <div id="video-player-area" class="relative w-full h-[55vh] md:h-[70vh] bg-black overflow-hidden">
+        // Tarik API di latar belakang (Background Fetch) setelah halaman terbuka
+        async function backgroundFetch() {
+            try {
+                // Fetch Rilis Terbaru
+                fetch(`${API_URL}/new-anime`)
+                    .then(res => res.json())
+                    .then(d => populateList('list-new', d.data))
+                    .catch(() => document.getElementById('list-new').innerHTML = '<p class="text-xs text-red-400">Gagal memuat API</p>');
+
+                // Fetch On Going
+                fetch(`${API_URL}/ongoing-anime`)
+                    .then(res => res.json())
+                    .then(d => populateList('list-ongoing', d.data))
+                    .catch(() => document.getElementById('list-ongoing').innerHTML = '<p class="text-xs text-red-400">Gagal memuat API</p>');
+
+                // Fetch Completed
+                fetch(`${API_URL}/completed-anime`)
+                    .then(res => res.json())
+                    .then(d => populateList('list-completed', d.data))
+                    .catch(() => document.getElementById('list-completed').innerHTML = '<p class="text-xs text-red-400">Gagal memuat API</p>');
+
+            } catch (err) {
+                console.error("Background fetch error:", err);
+            }
+        }
+
+        async function loadDetail(slug) {
+            const content = document.getElementById('main-content');
+            content.innerHTML = `<div class="h-[70vh] flex flex-col items-center justify-center"><i data-lucide="loader-2" class="w-8 h-8 animate-spin text-primary mb-2"></i><p class="text-xs text-gray-400">Memuat detail anime...</p></div>`;
+            if (window.lucide) window.lucide.createIcons();
+
+            try {
+                const res = await fetch(`${API_URL}/detail-anime/${slug}`);
+                if (!res.ok) throw new Error('Gagal mengambil detail');
+                const anime = await res.json();
+                const episodes = anime.episodes || [];
+                const tags = anime.genres ? anime.genres.map(g => g.tag) : [];
+
+                content.innerHTML = `
+                    <div class="relative w-full h-[50vh] bg-black overflow-hidden">
                         <img src="${anime.img}" class="absolute inset-0 w-full h-full object-cover opacity-50" alt="Poster">
                         <div class="absolute inset-0 hero-grad z-10"></div>
-                        ${videoAreaHTML}
+                        <div class="absolute top-4 left-4 z-50">
+                            <button onclick="goHome()" class="w-10 h-10 bg-black/50 rounded-full flex items-center justify-center hover:bg-black/80 transition">
+                                <i data-lucide="arrow-left" class="w-5 h-5 text-white"></i>
+                            </button>
+                        </div>
                     </div>
-
                     <div class="px-4 md:px-12 max-w-4xl mx-auto -mt-10 relative z-30">
-                        <h1 class="text-3xl md:text-5xl font-extrabold mb-1 text-white drop-shadow-md">${anime.japanese_title || anime.title}</h1>
-                        <p class="text-sm text-gray-400 mb-5 font-medium">${anime.title} Sub Indo</p>
-                        
-                        <div class="flex flex-wrap gap-2 mb-5">
-                            ${tags.map(tag => `<span class="bg-secondary/80 border border-gray-700/50 px-4 py-1.5 rounded-full text-xs font-semibold text-gray-300">${tag}</span>`).join('')}
+                        <h1 class="text-3xl md:text-5xl font-extrabold mb-1 text-white">${anime.japanese_title || anime.title}</h1>
+                        <p class="text-sm text-gray-400 mb-4">${anime.title} Sub Indo</p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            ${tags.map(t => `<span class="bg-secondary px-3 py-1 rounded-full text-xs text-gray-300">${t}</span>`).join('')}
                         </div>
-                        
-                        <div class="flex flex-wrap items-center gap-3 text-xs md:text-sm text-gray-300 mb-6 font-medium">
-                            <span class="flex items-center gap-1 text-yellow-500 font-bold"><i data-lucide="star" class="w-4 h-4 fill-yellow-500"></i> ${anime.rating || '-'}</span>
-                            <span class="text-gray-600">|</span>
-                            <span>${anime.type || 'TV'}</span>
-                            <span class="text-gray-600">|</span>
-                            <span>Status: ${anime.status || 'Unknown'}</span>
-                            <span class="text-gray-600">|</span>
-                            <span>Studio: ${anime.studio || '-'}</span>
-                        </div>
-
-                        <p class="text-sm text-gray-300 mb-10 leading-relaxed">
-                            ${anime.descriptions ? anime.descriptions.join('<br><br>') : 'Tidak ada sinopsis.'}
-                        </p>
-
-                        <div class="flex items-center gap-2 mb-4">
-                            <i data-lucide="list-video" class="w-5 h-5 text-primary"></i>
-                            <h3 class="font-bold text-lg text-white">Daftar Episode (${episodes.length})</h3>
-                        </div>
-
-                        <div class="flex flex-col gap-3">
-                            ${episodes.map((ep) => `
-                                <div onclick="playEpisode('${ep.detail_eps}')" class="flex items-center gap-4 p-2 rounded-xl hover:bg-secondary/50 transition cursor-pointer group">
-                                    <div class="relative w-32 aspect-video rounded-lg overflow-hidden shrink-0 bg-gray-900 border border-gray-800">
-                                         <img src="${anime.img}" class="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition" alt="Thumbnail">
-                                        <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
-                                            <i data-lucide="play-circle" class="w-8 h-8 text-white opacity-80 group-hover:text-primary transition group-hover:scale-110"></i>
-                                        </div>
-                                    </div>
-                                    <div class="flex-1 min-w-0 pr-2">
-                                        <h4 class="font-bold text-sm text-gray-200 group-hover:text-white truncate mb-1">
-                                            ${ep.title}
-                                        </h4>
-                                        <p class="text-xs text-gray-500 font-medium">Episode ${ep.episode}</p>
-                                    </div>
+                        <p class="text-sm text-gray-300 mb-8">${anime.descriptions ? anime.descriptions.join('<br>') : ''}</p>
+                        <h3 class="font-bold text-lg mb-4">Daftar Episode (${episodes.length})</h3>
+                        <div class="flex flex-col gap-2">
+                            ${episodes.map(ep => `
+                                <div class="p-3 bg-secondary rounded-xl flex justify-between items-center cursor-pointer hover:bg-gray-800 transition">
+                                    <span class="font-semibold text-sm">${ep.title}</span>
+                                    <span class="text-xs text-gray-400">Episode ${ep.episode}</span>
                                 </div>
                             `).join('')}
-                            ${episodes.length === 0 ? '<p class="text-sm text-gray-500 py-4">Belum ada episode.</p>' : ''}
                         </div>
                     </div>
-                </div>
-            `;
-        }
-
-        function render() {
-            const app = document.getElementById('app');
-            if (!app) return;
-
-            if (state.isLoading) {
-                app.innerHTML = `<div class="h-screen flex flex-col items-center justify-center"><i data-lucide="loader-2" class="w-10 h-10 animate-spin text-primary mb-4"></i><p class="text-gray-400 text-sm">Memuat seluruh data anime...</p></div>`;
-            } else if (state.error) {
-                app.innerHTML = `<div class="h-screen flex flex-col items-center justify-center px-4 text-center"><i data-lucide="triangle-alert" class="w-16 h-16 text-red-500 mb-4"></i><h2 class="text-xl font-bold mb-2">Terjadi Kesalahan</h2><p class="text-gray-400 text-sm mb-6">${state.error}</p><button onclick="fetchHomeData()" class="bg-primary px-8 py-2.5 rounded-full font-bold text-white">Coba Lagi</button></div>`;
-            } else if (state.view === 'home') {
-                app.innerHTML = renderNavbar()
-                    + renderHorizontalList('Rilis Terbaru', state.homeData.newAnime, 'flame', 'text-[#FF4500] fill-[#FF4500]')
-                    + renderHorizontalList('On Going Anime', state.homeData.ongoing, 'film', 'text-primary')
-                    + renderHorizontalList('Completed Anime', state.homeData.completed, 'check-circle', 'text-green-500')
-                    + renderHorizontalList('Anime Movie', state.homeData.movies, 'clapperboard', 'text-purple-500');
-            } else if (state.view === 'detail') {
-                app.innerHTML = renderDetail();
-            }
-            if (window.lucide) {
-                window.lucide.createIcons();
+                `;
+                if (window.lucide) window.lucide.createIcons();
+            } catch (err) {
+                content.innerHTML = `<div class="p-12 text-center"><p class="text-red-400 mb-4">Gagal memuat detail anime.</p><button onclick="goHome()" class="bg-primary px-6 py-2 rounded-full text-white font-bold">Kembali</button></div>`;
             }
         }
 
+        // Halaman langsung tampil tanpa menunggu fetch selesai
         document.addEventListener('DOMContentLoaded', () => {
-            fetchHomeData();
+            if (window.lucide) window.lucide.createIcons();
+            backgroundFetch(); // API ditarik di latar belakang
         });
     </script>
 </body>
