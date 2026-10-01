@@ -33,7 +33,7 @@
 
     <div id="app" class="w-full min-h-screen relative pb-24">
         <div class="h-screen flex flex-col items-center justify-center">
-            <p class="text-gray-400 text-sm animate-pulse">Memuat aplikasi TPLAY...</p>
+            <p class="text-gray-400 text-sm animate-pulse">Menghubungkan ke API...</p>
         </div>
     </div>
 
@@ -44,15 +44,24 @@
             view: 'home',
             isLoading: true,
             error: null,
-            homeData: { 
-                newAnime: [], 
-                ongoing: [], 
-                completed: [], 
-                movies: [] 
-            },
+            homeData: { newAnime: [], ongoing: [], completed: [], movies: [] },
             detail: null,
             activeVideo: { isLoading: false, url: null, error: null }
         };
+
+        // Fungsi fetch dengan timeout agar tidak infinite loading jika API lambat/diblokir
+        async function fetchWithTimeout(url, options = {}, timeout = 8000) {
+            const controller = new AbortController();
+            const id = setTimeout(() => controller.abort(), timeout);
+            try {
+                const response = await fetch(url, { ...options, signal: controller.signal });
+                clearTimeout(id);
+                return response;
+            } catch (error) {
+                clearTimeout(id);
+                throw error;
+            }
+        }
 
         async function fetchHomeData() {
             state.isLoading = true; 
@@ -60,22 +69,33 @@
             render();
             
             try {
-                const [newRes, ongoingRes, completedRes, movieRes] = await Promise.all([
-                    fetch(`${API_URL}/new-anime`).catch(() => null),
-                    fetch(`${API_URL}/ongoing-anime`).catch(() => null),
-                    fetch(`${API_URL}/completed-anime`).catch(() => null),
-                    fetch(`${API_URL}/type-anime/movie`).catch(() => null)
+                const results = await Promise.allSettled([
+                    fetchWithTimeout(`${API_URL}/new-anime`),
+                    fetchWithTimeout(`${API_URL}/ongoing-anime`),
+                    fetchWithTimeout(`${API_URL}/completed-anime`),
+                    fetchWithTimeout(`${API_URL}/type-anime/movie`)
                 ]);
 
-                if (newRes && newRes.ok) { const d = await newRes.json(); state.homeData.newAnime = d.data || []; }
-                if (ongoingRes && ongoingRes.ok) { const d = await ongoingRes.json(); state.homeData.ongoing = d.data || []; }
-                if (completedRes && completedRes.ok) { const d = await completedRes.json(); state.homeData.completed = d.data || []; }
-                if (movieRes && movieRes.ok) { const d = await movieRes.json(); state.homeData.movies = d.data || []; }
+                if (results[0].status === 'fulfilled' && results[0].value.ok) {
+                    const d = await results[0].value.json();
+                    state.homeData.newAnime = d.data || [];
+                }
+                if (results[1].status === 'fulfilled' && results[1].value.ok) {
+                    const d = await results[1].value.json();
+                    state.homeData.ongoing = d.data || [];
+                }
+                if (results[2].status === 'fulfilled' && results[2].value.ok) {
+                    const d = await results[2].value.json();
+                    state.homeData.completed = d.data || [];
+                }
+                if (results[3].status === 'fulfilled' && results[3].value.ok) {
+                    const d = await results[3].value.json();
+                    state.homeData.movies = d.data || [];
+                }
 
                 state.view = 'home';
-                state.activeVideo = { isLoading: false, url: null, error: null };
             } catch (err) {
-                state.error = err.message || 'Gagal memuat data dari server.';
+                state.error = "Gagal terhubung ke server API. Periksa koneksi atau kebijakan CORS domain Anda.";
             } finally {
                 state.isLoading = false;
                 render();
@@ -94,7 +114,7 @@
                 let slug = slugOrLink;
                 if (slug && slug.includes('/')) slug = slug.split('/').filter(Boolean).pop();
 
-                const res = await fetch(`${API_URL}/detail-anime/${slug}`);
+                const res = await fetchWithTimeout(`${API_URL}/detail-anime/${slug}`);
                 if (!res.ok) throw new Error('Gagal mengambil detail anime');
                 
                 state.detail = await res.json();
@@ -111,14 +131,14 @@
             render(); 
             
             try {
-                const epsRes = await fetch(`${API_URL}${detailEpsUrl}`);
+                const epsRes = await fetchWithTimeout(`${API_URL}${detailEpsUrl}`);
                 if (!epsRes.ok) throw new Error('Gagal mengambil data episode');
                 const epsData = await epsRes.json();
                 
                 const videoPath = epsData?.videos?.[0]?.video;[span_1](start_span)[span_1](end_span)
                 if (!videoPath) throw new Error('Server video tidak tersedia.');
 
-                const vidRes = await fetch(`${API_URL}${videoPath}`);
+                const vidRes = await fetchWithTimeout(`${API_URL}${videoPath}`);
                 if (!vidRes.ok) throw new Error('Gagal membuka koneksi ke server video.');
                 const vidData = await vidRes.json();
                 
@@ -287,7 +307,6 @@
             }
         }
 
-        // Pastikan DOM sudah siap sebelum fetch data pertama kali agar tidak blank
         document.addEventListener('DOMContentLoaded', () => {
             fetchHomeData();
         });
