@@ -31,42 +31,91 @@
 </head>
 <body class="antialiased selection:bg-primary selection:text-white">
 
+    <!-- Root Application Container -->
     <div id="app" class="w-full min-h-screen relative pb-28"></div>
 
     <script>
+        /**
+         * TPLAY Client Application Core Architecture
+         * Base API Endpoint: https://api.animekudesu.web.id
+         */
         const API_URL = 'https://api.animekudesu.web.id';
 
+        // Global State Management
         const state = {
-            view: 'home',
+            view: 'home', // 'home' | 'detail'
+            isLoading: false,
+            errorMessage: null,
             animeList: [
-                { title: 'Solo Leveling Season 2', img: 'https://image.tmdb.org/t/p/original/w6yxgGnbPz7Gk4kEqX9X9yNid99.jpg', type: 'TV', score: '9.5', episode: 'Episode 12', season: 'Season 2' },
-                { title: 'One Piece', img: 'https://image.tmdb.org/t/p/original/fcxdJWw3c0B3kngO2e06cEQ2bEI.jpg', type: 'TV', score: '9.1', episode: 'Episode 1087', season: 'Egghead Arc' },
-                { title: 'Dandadan', img: '', type: 'TV', score: '8.8', episode: 'Episode 12', season: 'Season 2' },
-                { title: 'Jujutsu Kaisen', img: '', type: 'TV', score: '9.3', episode: 'Episode 23', season: 'Season 2' },
-                { title: 'Tokyo Revengers', img: '', type: 'TV', score: '8.5', episode: 'Episode 13', season: 'Season 3' },
-                { title: 'Wind Breaker', img: '', type: 'TV', score: '8.7', episode: 'Episode 12', season: 'Season 2' }
+                { 
+                    title: 'Solo Leveling Season 2', 
+                    slug: 'solo-leveling-season-2', 
+                    link: '/anime/solo-leveling-season-2', 
+                    img: 'https://image.tmdb.org/t/p/original/w6yxgGnbPz7Gk4kEqX9X9yNid99.jpg', 
+                    type: 'TV', 
+                    score: '9.5', 
+                    episode: 'Episode 12', 
+                    season: 'Season 2',
+                    desc: 'Setelah kembali dari ambang kematian, Sung Jin-Woo kini menjadi hunter terkuat di dunia...'
+                },
+                { 
+                    title: 'One Piece', 
+                    slug: 'one-piece', 
+                    link: '/anime/one-piece', 
+                    img: 'https://image.tmdb.org/t/p/original/fcxdJWw3c0B3kngO2e06cEQ2bEI.jpg', 
+                    type: 'TV', 
+                    score: '9.1', 
+                    episode: 'Episode 1087', 
+                    season: 'Egghead Arc',
+                    desc: 'Luffy dan kru Topi Jerami tiba di pulau penuh teknologi canggih dan rahasia besar.'
+                },
+                { title: 'Dandadan', slug: 'dandadan', link: '/anime/dandadan', img: '', type: 'TV', score: '8.8', episode: 'Episode 12', season: 'Season 2' },
+                { title: 'Jujutsu Kaisen', slug: 'jujutsu-kaisen', link: '/anime/jujutsu-kaisen', img: '', type: 'TV', score: '9.3', episode: 'Episode 23', season: 'Season 2' },
+                { title: 'Tokyo Revengers', slug: 'tokyo-revengers', link: '/anime/tokyo-revengers', img: '', type: 'TV', score: '8.5', episode: 'Episode 13', season: 'Season 3' },
+                { title: 'Wind Breaker', slug: 'wind-breaker', link: '/anime/wind-breaker', img: '', type: 'TV', score: '8.7', episode: 'Episode 12', season: 'Season 2' }
             ],
             genres: [
-                { title: 'Action' }, { title: 'Adventure' }, { title: 'Fantasy' }, 
-                { title: 'Romance' }, { title: 'Comedy' }, { title: 'School' }
+                { title: 'Action', slug: 'action' }, 
+                { title: 'Adventure', slug: 'adventure' }, 
+                { title: 'Fantasy', slug: 'fantasy' }, 
+                { title: 'Romance', slug: 'romance' }, 
+                { title: 'Comedy', slug: 'comedy' }, 
+                { title: 'School', slug: 'school' }
             ],
             detail: null,
-            activeVideo: { isLoading: false, url: null, servers: [], activeServerPath: null, error: null }
+            activeVideo: { 
+                isLoading: false, 
+                url: null, 
+                servers: [], 
+                activeServerPath: null, 
+                error: null 
+            }
         };
 
+        // Mapping Icon untuk Genre Populer
         const GENRE_ICONS = { 
-            'Action': 'swords', 'Adventure': 'map', 'Comedy': 'smile', 
-            'Fantasy': 'sparkles', 'Romance': 'heart', 'School': 'graduation-cap' 
+            'Action': 'swords', 
+            'Adventure': 'map', 
+            'Comedy': 'smile', 
+            'Fantasy': 'sparkles', 
+            'Romance': 'heart', 
+            'School': 'graduation-cap' 
         };
 
+        /**
+         * Navigasi kembali ke halaman Beranda
+         */
         function goHome() {
             state.view = 'home';
             state.detail = null;
             state.activeVideo = { isLoading: false, url: null, servers: [], activeServerPath: null, error: null };
             renderHome();
-            window.scrollTo(0, 0);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
+        /**
+         * Ekstraksi slug bersih dari URL atau parameter link
+         */
         function extractSlug(link) {
             if (!link) return '';
             let clean = link.split('?')[0].split('#')[0];
@@ -74,6 +123,9 @@
             return parts[parts.length - 1] || '';
         }
 
+        /**
+         * Komponen Render: Navbar Utama TPLAY
+         */
         function renderNavbar() {
             return `
                 <nav class="absolute top-0 w-full z-50 px-4 py-5 md:px-12 flex justify-between items-center bg-gradient-to-b from-black/90 to-transparent">
@@ -90,7 +142,7 @@
                             <span class="hover:text-white cursor-pointer transition flex items-center gap-1">Lainnya <i data-lucide="chevron-down" class="w-4 h-4"></i></span>
                         </div>
                     </div>
-                    <div class="hidden md:flex items-center bg-surface px-4 py-2 rounded-full border border-gray-800 w-64">
+                    <div class="hidden md:flex items-center bg-surface px-4 py-2 rounded-full border border-gray-800 w-64 shadow-inner">
                         <input type="text" placeholder="Cari anime, genre, atau judul..." class="bg-transparent outline-none text-sm w-full text-white placeholder-gray-500">
                         <i data-lucide="search" class="text-gray-400 w-4 h-4"></i>
                     </div>
@@ -98,6 +150,9 @@
             `;
         }
 
+        /**
+         * Komponen Render: Halaman Beranda Utama
+         */
         function renderHome() {
             const app = document.getElementById('app');
             if (!app) return;
@@ -108,8 +163,9 @@
             app.innerHTML = `
                 ${renderNavbar()}
                 
+                <!-- Hero Section Utama -->
                 <div class="relative w-full h-[65vh] md:h-[85vh] overflow-hidden bg-surface">
-                    ${hero.img ? `<img src="${hero.img}" class="absolute w-full h-full object-cover object-top opacity-60" alt="Hero">` : ''}
+                    ${hero.img ? `<img src="${hero.img}" class="absolute w-full h-full object-cover object-top opacity-60" alt="Hero Poster">` : ''}
                     <div class="absolute inset-0 hero-grad z-10"></div>
                     
                     <div class="absolute bottom-0 w-full px-4 pb-8 md:px-12 md:pb-20 z-20 max-w-3xl">
@@ -127,16 +183,23 @@
                         </div>
                         
                         <div class="flex items-center gap-3">
-                            <button onclick="loadDetail('${extractSlug(hero.link || hero.slug || 'solo-leveling')}');" class="bg-primary hover:bg-blue-600 shadow-[0_0_20px_rgba(30,144,255,0.4)] transition text-white px-6 md:px-8 py-3 rounded-full font-bold flex items-center gap-2 text-sm">
+                            <button onclick="loadDetail('${extractSlug(hero.link || hero.slug || 'solo-leveling')}');" class="bg-primary hover:bg-blue-600 shadow-[0_0_20px_rgba(30,144,255,0.4)] transition text-white px-6 md:px-8 py-3 rounded-full font-bold flex items-center gap-2 text-sm cursor-pointer">
                                 <i data-lucide="play" class="fill-white w-4 h-4"></i> Mulai Nonton
                             </button>
-                            <button onclick="loadDetail('${extractSlug(hero.link || hero.slug || 'solo-leveling')}');" class="bg-surface/80 backdrop-blur border border-gray-600 hover:bg-surface transition text-white px-6 md:px-8 py-3 rounded-full font-bold flex items-center gap-2 text-sm">
+                            <button onclick="loadDetail('${extractSlug(hero.link || hero.slug || 'solo-leveling')}');" class="bg-surface/80 backdrop-blur border border-gray-600 hover:bg-surface transition text-white px-6 md:px-8 py-3 rounded-full font-bold flex items-center gap-2 text-sm cursor-pointer">
                                 <i data-lucide="info" class="w-4 h-4"></i> Detail
                             </button>
                         </div>
                     </div>
+
+                    <div class="absolute bottom-6 right-12 hidden md:flex items-center gap-2 z-20">
+                        <div class="w-8 h-2 rounded-full bg-primary"></div>
+                        <div class="w-2 h-2 rounded-full bg-gray-600"></div>
+                        <div class="w-2 h-2 rounded-full bg-gray-600"></div>
+                    </div>
                 </div>
 
+                <!-- Bagian Anime Trending Horizontal -->
                 <div class="px-4 md:px-12 mt-6">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-lg md:text-xl font-bold flex items-center gap-2">
@@ -151,7 +214,7 @@
                                 <div class="absolute top-2 left-2 z-10 bg-primary text-white w-6 h-6 flex items-center justify-center rounded text-xs font-extrabold shadow-lg">
                                     ${idx + 1}
                                 </div>
-                                <div class="overflow-hidden rounded-xl border border-gray-800 aspect-[3/4] relative bg-secondary">
+                                <div class="overflow-hidden rounded-xl border border-gray-800 aspect-[3/4] relative bg-secondary shadow-md">
                                     <img src="${anime.img || ''}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="Poster">
                                     <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
                                         <i data-lucide="play-circle" class="w-10 h-10 text-primary"></i>
@@ -164,13 +227,14 @@
                     </div>
                 </div>
 
+                <!-- Bagian Genre Populer -->
                 <div class="px-4 md:px-12 mt-6 pb-24">
                     <h2 class="text-lg md:text-xl font-bold mb-4">Genre Populer</h2>
                     <div class="grid grid-cols-2 md:grid-cols-6 gap-3">
                         ${state.genres.map(genre => {
                             const iconName = GENRE_ICONS[genre.title] || 'film';
                             return `
-                                <div class="bg-surface border border-gray-800 hover:border-primary transition p-3.5 rounded-xl flex items-center gap-3 cursor-pointer group">
+                                <div class="bg-surface border border-gray-800 hover:border-primary transition p-3.5 rounded-xl flex items-center gap-3 cursor-pointer group shadow-sm">
                                     <div class="bg-gray-800 group-hover:bg-primary/20 p-2 rounded-lg transition">
                                         <i data-lucide="${iconName}" class="w-5 h-5 text-gray-300 group-hover:text-primary"></i>
                                     </div>
@@ -184,7 +248,8 @@
                     </div>
                 </div>
 
-                <div class="md:hidden fixed bottom-0 w-full bg-surface/95 backdrop-blur border-t border-gray-800 flex justify-around p-3 z-50">
+                <!-- Mobile Bottom Navigation Bar -->
+                <div class="md:hidden fixed bottom-0 w-full bg-surface/95 backdrop-blur border-t border-gray-800 flex justify-around p-3 z-50 shadow-2xl">
                     <div class="flex flex-col items-center gap-0.5 text-primary cursor-pointer"><i data-lucide="home" class="w-5 h-5 fill-primary"></i><span class="text-[10px]">Beranda</span></div>
                     <div class="flex flex-col items-center gap-0.5 text-gray-400 cursor-pointer"><i data-lucide="flame" class="w-5 h-5"></i><span class="text-[10px]">Trending</span></div>
                     <div class="flex flex-col items-center gap-0.5 text-gray-400 cursor-pointer"><i data-lucide="layout-grid" class="w-5 h-5"></i><span class="text-[10px]">Semua Anime</span></div>
@@ -195,6 +260,9 @@
             if (window.lucide) window.lucide.createIcons();
         }
 
+        /**
+         * Memuat Halaman Detail Anime Asli Berdasarkan Slug
+         */
         async function loadDetail(slugOrLink) {
             state.view = 'detail';
             state.activeVideo = { isLoading: false, url: null, servers: [], activeServerPath: null, error: null };
@@ -203,16 +271,16 @@
             app.innerHTML = `
                 <div class="min-h-screen bg-background flex flex-col items-center justify-center">
                     <i data-lucide="loader-2" class="w-10 h-10 animate-spin text-primary mb-3"></i>
-                    <p class="text-gray-400 text-sm font-medium">Memuat Detail Anime & Server...</p>
+                    <p class="text-gray-400 text-sm font-medium">Memuat Detail Anime & Server Video...</p>
                 </div>
             `;
             if (window.lucide) window.lucide.createIcons();
-            window.scrollTo(0, 0);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
 
             try {
                 let slug = extractSlug(slugOrLink) || 'solo-leveling';
                 const res = await fetch(`${API_URL}/detail-anime/${slug}`);
-                if (!res.ok) throw new Error('Gagal mengambil detail.');
+                if (!res.ok) throw new Error('Gagal mengambil detail dari server API.');
                 
                 state.detail = await res.json();
                 renderDetailView();
@@ -224,25 +292,28 @@
             } catch (err) {
                 app.innerHTML = `
                     <div class="p-12 text-center min-h-screen flex flex-col items-center justify-center">
-                        <p class="text-red-400 mb-4 font-semibold">Gagal memuat detail dari API.</p>
-                        <button onclick="goHome()" class="bg-primary px-6 py-2.5 rounded-full text-white font-bold">Kembali ke Beranda</button>
+                        <p class="text-red-400 mb-4 font-semibold">Gagal memuat detail dari API: ${err.message}</p>
+                        <button onclick="goHome()" class="bg-primary px-6 py-2.5 rounded-full text-white font-bold cursor-pointer">Kembali ke Beranda</button>
                     </div>
                 `;
                 if (window.lucide) window.lucide.createIcons();
             }
         }
 
+        /**
+         * Logika Tingkat 1: Mengambil daftar server pemutar video dari `detail_eps`
+         */
         async function selectAndPlayEpisode(detailEpsUrl) {
             state.activeVideo = { isLoading: true, url: null, servers: [], activeServerPath: null, error: null };
             updatePlayerAndServersUI();
 
             try {
                 const res = await fetch(`${API_URL}${detailEpsUrl}`);
-                if (!res.ok) throw new Error('Gagal mengambil data server.');
+                if (!res.ok) throw new Error('Gagal mengambil data server episode.');
                 const data = await res.json();
                 
                 const videos = data.videos || [];
-                if (videos.length === 0) throw new Error('Server video tidak tersedia.');
+                if (videos.length === 0) throw new Error('Server video tidak tersedia untuk episode ini.');
 
                 state.activeVideo.servers = videos;
                 await playServerVideo(videos[0].video);
@@ -253,6 +324,9 @@
             }
         }
 
+        /**
+         * Logika Tingkat 2: Mengambil URL stream iframe asli berdasarkan server yang dipilih
+         */
         async function playServerVideo(videoPath) {
             state.activeVideo.isLoading = true;
             state.activeVideo.activeServerPath = videoPath;
@@ -260,10 +334,10 @@
 
             try {
                 const res = await fetch(`${API_URL}${videoPath}`);
-                if (!res.ok) throw new Error('Gagal terhubung ke server.');
+                if (!res.ok) throw new Error('Gagal terhubung ke endpoint server video.');
                 const data = await res.json();
 
-                if (!data.url) throw new Error('URL video kosong.');
+                if (!data.url) throw new Error('URL stream video kosong dari server.');
 
                 state.activeVideo.isLoading = false;
                 state.activeVideo.url = data.url;
@@ -275,6 +349,9 @@
             updatePlayerAndServersUI();
         }
 
+        /**
+         * Render Pemutar Video Dinamis dan Tombol Pilihan Server Ganda
+         */
         function updatePlayerAndServersUI() {
             const playerWrapper = document.getElementById('player-dynamic-wrapper');
             if (!playerWrapper) return;
@@ -283,9 +360,9 @@
             let playerHTML = '';
 
             if (vid.isLoading) {
-                playerHTML = `<div class="absolute inset-0 flex flex-col items-center justify-center bg-black/90 z-30"><i data-lucide="loader-2" class="w-10 h-10 animate-spin text-primary mb-2"></i><p class="text-gray-300 text-sm">Menyiapkan Server...</p></div>`;
+                playerHTML = `<div class="absolute inset-0 flex flex-col items-center justify-center bg-black/90 z-30"><i data-lucide="loader-2" class="w-10 h-10 animate-spin text-primary mb-2"></i><p class="text-gray-300 text-sm">Menyiapkan Server Video...</p></div>`;
             } else if (vid.error) {
-                playerHTML = `<div class="absolute inset-0 flex flex-col items-center justify-center bg-gray-950 z-30 px-4 text-center"><p class="text-red-400 font-medium mb-1">Gagal Memutar</p><p class="text-gray-400 text-xs">${vid.error}</p></div>`;
+                playerHTML = `<div class="absolute inset-0 flex flex-col items-center justify-center bg-gray-950 z-30 px-4 text-center"><p class="text-red-400 font-medium mb-1">Gagal Memutar Video</p><p class="text-gray-400 text-xs">${vid.error}</p></div>`;
             } else if (vid.url) {
                 playerHTML = `<iframe src="${vid.url}" class="absolute inset-0 w-full h-full border-0 z-30" allowfullscreen loading="lazy"></iframe>`;
             }
@@ -298,7 +375,7 @@
                     <div class="flex items-center gap-2 mb-2"><i data-lucide="server" class="w-4 h-4 text-primary"></i><span class="text-xs font-bold text-gray-400">Pilih Server Player:</span></div>
                     <div class="flex flex-wrap gap-2">
                         ${vid.servers.map(srv => `
-                            <button onclick="playServerVideo('${srv.video}')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition border ${vid.activeServerPath === srv.video ? 'bg-primary border-primary text-white shadow-[0_0_10px_rgba(30,144,255,0.4)]' : 'bg-surface border-gray-700 text-gray-300 hover:border-gray-500'}">
+                            <button onclick="playServerVideo('${srv.video}')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition border cursor-pointer ${vid.activeServerPath === srv.video ? 'bg-primary border-primary text-white shadow-[0_0_10px_rgba(30,144,255,0.4)]' : 'bg-surface border-gray-700 text-gray-300 hover:border-gray-500'}">
                                 ${srv.title}
                             </button>
                         `).join('')}
@@ -308,6 +385,9 @@
             if (window.lucide) window.lucide.createIcons();
         }
 
+        /**
+         * Komponen Render: Tampilan Detail Lengkap dan Daftar Episode
+         */
         function renderDetailView() {
             const app = document.getElementById('app');
             const anime = state.detail;
@@ -317,17 +397,17 @@
             app.innerHTML = `
                 <div class="relative min-h-screen bg-background pb-20">
                     <div class="absolute top-0 w-full z-50 p-4 flex justify-between items-center bg-gradient-to-b from-black/80 to-transparent">
-                        <button onclick="goHome()" class="w-10 h-10 bg-black/50 border border-white/10 rounded-full backdrop-blur-md flex items-center justify-center hover:bg-black/80 transition">
+                        <button onclick="goHome()" class="w-10 h-10 bg-black/50 border border-white/10 rounded-full backdrop-blur-md flex items-center justify-center hover:bg-black/80 transition cursor-pointer">
                             <i data-lucide="arrow-left" class="w-5 h-5 text-white"></i>
                         </button>
                         <div class="flex gap-2">
-                            <button class="w-10 h-10 bg-black/50 border border-white/10 rounded-full backdrop-blur-md flex items-center justify-center"><i data-lucide="share-2" class="w-4 h-4 text-white"></i></button>
-                            <button class="w-10 h-10 bg-black/50 border border-white/10 rounded-full backdrop-blur-md flex items-center justify-center"><i data-lucide="heart" class="w-4 h-4 text-white"></i></button>
+                            <button class="w-10 h-10 bg-black/50 border border-white/10 rounded-full backdrop-blur-md flex items-center justify-center cursor-pointer"><i data-lucide="share-2" class="w-4 h-4 text-white"></i></button>
+                            <button class="w-10 h-10 bg-black/50 border border-white/10 rounded-full backdrop-blur-md flex items-center justify-center cursor-pointer"><i data-lucide="heart" class="w-4 h-4 text-white"></i></button>
                         </div>
                     </div>
 
-                    <div id="video-player-area" class="relative w-full aspect-video md:h-[65vh] bg-black overflow-hidden">
-                        <img src="${anime.img}" class="absolute inset-0 w-full h-full object-cover opacity-50" alt="Cover">
+                    <div id="video-player-area" class="relative w-full aspect-video md:h-[65vh] bg-black overflow-hidden shadow-2xl">
+                        <img src="${anime.img}" class="absolute inset-0 w-full h-full object-cover opacity-50" alt="Cover Poster">
                         <div class="absolute inset-0 hero-grad z-10"></div>
                         <div id="player-dynamic-wrapper" class="absolute inset-0"></div>
                     </div>
@@ -336,13 +416,13 @@
                         <h1 class="text-3xl md:text-5xl font-extrabold mb-1 text-white">${anime.japanese_title || anime.title}</h1>
                         <p class="text-sm text-gray-400 mb-4 font-medium">${anime.title} Sub Indo</p>
                         
-                        <div id="server-buttons-container" class="mb-5 bg-surface/80 p-3.5 rounded-xl border border-gray-800"></div>
+                        <div id="server-buttons-container" class="mb-5 bg-surface/80 p-3.5 rounded-xl border border-gray-800 shadow-lg"></div>
 
                         <div class="flex flex-wrap gap-2 mb-4">
                             ${tags.map(t => `<span class="bg-surface border border-gray-700/60 px-3.5 py-1 rounded-full text-xs font-semibold text-gray-300">${t}</span>`).join('')}
                         </div>
                         
-                        <div class="flex flex-wrap items-center gap-2.5 text-xs md:text-sm text-gray-300 mb-5 font-semibold bg-surface/60 p-3 rounded-xl border border-gray-800 w-max">
+                        <div class="flex flex-wrap items-center gap-2.5 text-xs md:text-sm text-gray-300 mb-5 font-semibold bg-surface/60 p-3 rounded-xl border border-gray-800 w-max shadow-sm">
                             <span class="flex items-center gap-1 text-yellow-500 font-bold"><i data-lucide="star" class="w-4 h-4 fill-yellow-500"></i> ${anime.rating || '9.1'}</span>
                             <span class="text-gray-600">|</span>
                             <span>${anime.type || 'TV'}</span>
@@ -360,7 +440,7 @@
                             <h3 class="font-bold text-lg text-white flex items-center gap-2"><i data-lucide="list-video" class="text-primary w-5 h-5"></i> Pilih Episode (${episodes.length})</h3>
                         </div>
 
-                        <div class="bg-surface rounded-xl border border-gray-800 px-4 py-3 mb-4 flex justify-between items-center text-sm font-semibold">
+                        <div class="bg-surface rounded-xl border border-gray-800 px-4 py-3 mb-4 flex justify-between items-center text-sm font-semibold shadow-inner">
                             <span>Episode Terbaru & Terlengkap</span>
                             <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400"></i>
                         </div>
@@ -383,7 +463,7 @@
                                         </h4>
                                         <p class="text-xs text-gray-400 truncate">${ep.title}</p>
                                     </div>
-                                    <button class="p-2.5 text-gray-400 hover:text-white hover:bg-gray-800 rounded-full transition"><i data-lucide="download" class="w-5 h-5"></i></button>
+                                    <button class="p-2.5 text-gray-400 hover:text-white hover:bg-gray-800 rounded-full transition cursor-pointer"><i data-lucide="download" class="w-5 h-5"></i></button>
                                 </div>
                             `).join('')}
                             ${episodes.length === 0 ? '<p class="text-sm text-gray-500 py-6 text-center">Belum ada episode tersedia.</p>' : ''}
@@ -392,9 +472,12 @@
                 </div>
             `;
             if (window.lucide) window.lucide.createIcons();
-            window.scrollTo(0, 0);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
+        /**
+         * Sinkronisasi data API di latar belakang secara asinkron tanpa memblokir rendering awal
+         */
         async function backgroundSync() {
             try {
                 const res = await fetch(`${API_URL}/new-anime`);
@@ -406,10 +489,11 @@
                     }
                 }
             } catch (e) {
-                console.log("Menggunakan data lokal");
+                console.log("Sinkronisasi latar belakang menggunakan data lokal/fallback");
             }
         }
 
+        // Inisialisasi Aplikasi Saat DOM Selesai Dimuat
         document.addEventListener('DOMContentLoaded', () => {
             if (window.lucide) window.lucide.createIcons();
             renderHome();
