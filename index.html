@@ -31,7 +31,6 @@
 </head>
 <body class="antialiased selection:bg-primary selection:text-white">
 
-    <!-- Root Application Container -->
     <div id="app" class="w-full min-h-screen relative pb-28">
         <!-- Navbar Utama -->
         <nav class="absolute top-0 w-full z-50 px-4 py-5 md:px-12 flex justify-between items-center bg-gradient-to-b from-black/90 to-transparent">
@@ -49,7 +48,7 @@
                 </div>
             </div>
             <div class="hidden md:flex items-center bg-surface px-4 py-2 rounded-full border border-gray-800 w-64 shadow-inner">
-                <input type="text" placeholder="Cari anime, genre, atau judul..." class="bg-transparent outline-none text-sm w-full text-white placeholder-gray-500">
+                <input type="text" placeholder="Cari anime, genre..." class="bg-transparent outline-none text-sm w-full text-white placeholder-gray-500">
                 <i data-lucide="search" class="text-gray-400 w-4 h-4"></i>
             </div>
         </nav>
@@ -95,11 +94,11 @@
                     <span class="text-xs text-gray-400 hover:text-white cursor-pointer flex items-center gap-1 font-medium">Lihat Semua <i data-lucide="arrow-right" class="w-4 h-4"></i></span>
                 </div>
                 
-                <div class="flex overflow-x-auto gap-4 hide-scroll pb-4 snap-x" id="trending-container">
+                <div class="flex overflow-x-auto gap-4 hide-scroll pb-4 snap-x">
                     <div class="w-[140px] md:w-[190px] shrink-0 relative cursor-pointer group snap-start" onclick="loadDetail('solo-leveling-season-2')">
                         <div class="absolute top-2 left-2 z-10 bg-primary text-white w-6 h-6 flex items-center justify-center rounded text-xs font-extrabold shadow-lg">1</div>
                         <div class="overflow-hidden rounded-xl border border-gray-800 aspect-[3/4] relative bg-secondary shadow-md">
-                            <img src="https://image.tmdb.org/t/p/original/w6yxgGnbPz7Gk4kEqX9X9yNid99.jpg" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="Poster">
+                            <img src="https://image.tmdb.org/t/p/original/w6yxgGnbPz7Gk4kEqX9X9yNid99.jpg" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="Solo Leveling">
                         </div>
                         <h3 class="mt-2 font-bold text-sm line-clamp-1 group-hover:text-primary transition">Solo Leveling Season 2</h3>
                         <p class="text-[11px] text-gray-400 mt-0.5">Season 2</p>
@@ -107,7 +106,7 @@
                     <div class="w-[140px] md:w-[190px] shrink-0 relative cursor-pointer group snap-start" onclick="loadDetail('one-piece')">
                         <div class="absolute top-2 left-2 z-10 bg-primary text-white w-6 h-6 flex items-center justify-center rounded text-xs font-extrabold shadow-lg">2</div>
                         <div class="overflow-hidden rounded-xl border border-gray-800 aspect-[3/4] relative bg-secondary shadow-md">
-                            <img src="https://image.tmdb.org/t/p/original/fcxdJWw3c0B3kngO2e06cEQ2bEI.jpg" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="Poster">
+                            <img src="https://image.tmdb.org/t/p/original/fcxdJWw3c0B3kngO2e06cEQ2bEI.jpg" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="One Piece">
                         </div>
                         <h3 class="mt-2 font-bold text-sm line-clamp-1 group-hover:text-primary transition">One Piece</h3>
                         <p class="text-[11px] text-gray-400 mt-0.5">Egghead Arc</p>
@@ -177,9 +176,6 @@
             return parts[parts.length - 1] || '';
         }
 
-        /**
-         * Memuat halaman Detail Anime dan menghubungkan sistem pemutaran video bertingkat
-         */
         async function loadDetail(slugOrLink) {
             state.view = 'detail';
             state.activeVideo = { isLoading: false, url: null, servers: [], activeServerPath: null, error: null };
@@ -380,7 +376,6 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // Inisialisasi ikon Lucide saat halaman dimuat
         document.addEventListener('DOMContentLoaded', () => {
             if (window.lucide) {
                 window.lucide.createIcons();
