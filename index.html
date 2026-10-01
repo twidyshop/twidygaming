@@ -3,403 +3,416 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TPLAY - Streaming Anime Tanpa Batas</title>
+    <title>TPLAY - Nonton Anime Kapan Saja</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
                     colors: {
-                        background: '#070b14',
-                        surface: '#111726',
-                        primary: '#1E90FF',
-                        secondary: '#1A2235'
+                        background: '#0B0F19',
+                        card: '#131927',
+                        primary: '#1d4ed8'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
                     }
                 }
             }
         }
     </script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Vue 3 & Lucide Icons -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body { background-color: #070b14; color: #ffffff; -webkit-tap-highlight-color: transparent; }
-        .hide-scroll::-webkit-scrollbar { display: none; }
-        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
-        .hero-grad { background: linear-gradient(180deg, rgba(7,11,20,0) 20%, rgba(7,11,20,0.8) 70%, #070b14 100%); }
+        body { background-color: #0B0F19; color: #ffffff; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        [v-cloak] { display: none; }
+        .hero-gradient { background: linear-gradient(to right, rgba(11,15,25,1) 0%, rgba(11,15,25,0.6) 50%, transparent 100%); }
+        .hero-fade-bottom { background: linear-gradient(to top, #0B0F19 0%, transparent 100%); }
+        .badge-polygon { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 85%); }
     </style>
 </head>
-<body class="antialiased selection:bg-primary selection:text-white">
-
-    <!-- ========================================================================= -->
-    <!-- APPLICATION ROOT CONTAINER                                                -->
-    <!-- ========================================================================= -->
-    <div id="app" class="w-full min-h-screen relative pb-28">
+<body class="antialiased overflow-x-hidden hide-scrollbar">
+    <div id="app" v-cloak class="min-h-screen pb-20 md:pb-10">
         
-        <!-- ===================================================================== -->
-        <!-- NAVIGATION BAR COMPONENT                                              -->
-        <!-- ===================================================================== -->
-        <nav class="absolute top-0 w-full z-50 px-4 py-5 md:px-12 flex justify-between items-center bg-gradient-to-b from-black/90 to-transparent">
-            <div class="flex items-center gap-8">
-                <div class="flex items-center gap-2 cursor-pointer" onclick="goHome()">
-                    <i data-lucide="play" class="text-primary fill-primary w-7 h-7 md:w-8 md:h-8"></i>
-                    <span class="text-xl md:text-2xl font-extrabold tracking-wider">TPLAY</span>
+        <!-- ================= HOME VIEW ================= -->
+        <div v-show="currentView === 'home'" class="fade-in">
+            <!-- Navbar -->
+            <nav class="absolute top-0 w-full z-50 flex items-center justify-between px-4 md:px-12 py-6 bg-gradient-to-b from-black/80 to-transparent">
+                <div class="flex items-center gap-8">
+                    <div class="flex items-center gap-2 cursor-pointer">
+                        <i data-lucide="play" class="w-8 h-8 text-blue-500 fill-blue-500"></i>
+                        <span class="font-bold text-2xl tracking-wider">TPLAY</span>
+                    </div>
+                    <div class="hidden md:flex gap-6 text-sm font-medium text-gray-300">
+                        <a href="#" class="text-white border-b-2 border-blue-500 pb-1">Beranda</a>
+                        <a href="#" class="hover:text-white transition">Trending</a>
+                        <a href="#" class="hover:text-white transition">Semua Anime</a>
+                        <a href="#" class="hover:text-white transition">Jadwal</a>
+                        <a href="#" class="hover:text-white transition flex items-center gap-1">Lainnya <i data-lucide="chevron-down" class="w-4 h-4"></i></a>
+                    </div>
                 </div>
-                <div class="hidden md:flex items-center gap-6 text-sm font-semibold text-gray-300">
-                    <span class="text-white border-b-2 border-primary pb-1 cursor-pointer">Beranda</span>
-                    <span class="hover:text-white cursor-pointer transition">Trending</span>
-                    <span class="hover:text-white cursor-pointer transition">Semua Anime</span>
-                    <span class="hover:text-white cursor-pointer transition">Jadwal</span>
-                    <span class="hover:text-white cursor-pointer transition flex items-center gap-1">Lainnya <i data-lucide="chevron-down" class="w-4 h-4"></i></span>
+                <div class="flex items-center gap-4">
+                    <div class="relative hidden md:block">
+                        <i data-lucide="search" class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                        <input type="text" placeholder="Cari anime, genre..." class="bg-card border border-gray-700 rounded-full py-2 pl-10 pr-4 text-sm focus:outline-none focus:border-blue-500 w-64 text-white">
+                    </div>
+                    <button class="md:hidden"><i data-lucide="search" class="w-6 h-6"></i></button>
+                    <button class="md:hidden"><i data-lucide="menu" class="w-6 h-6"></i></button>
                 </div>
-            </div>
-            <div class="hidden md:flex items-center bg-surface px-4 py-2 rounded-full border border-gray-800 w-64 shadow-inner">
-                <input type="text" placeholder="Cari anime, genre, atau judul..." class="bg-transparent outline-none text-sm w-full text-white placeholder-gray-500">
-                <i data-lucide="search" class="text-gray-400 w-4 h-4"></i>
-            </div>
-        </nav>
+            </nav>
 
-        <!-- ===================================================================== -->
-        <!-- DYNAMIC VIEWPORT CONTAINER                                            -->
-        <!-- ===================================================================== -->
-        <div id="main-viewport">
-            <!-- Hero Section Utama -->
-            <div id="hero-section" class="relative w-full h-[65vh] md:h-[85vh] overflow-hidden bg-surface">
-                <img src="https://image.tmdb.org/t/p/original/w6yxgGnbPz7Gk4kEqX9X9yNid99.jpg" class="absolute w-full h-full object-cover object-top opacity-60" alt="Hero Poster">
-                <div class="absolute inset-0 hero-grad z-10"></div>
+            <!-- Hero Loading -->
+            <div v-if="isLoading" class="h-[70vh] flex justify-center items-center">
+                <i data-lucide="loader-2" class="w-10 h-10 animate-spin text-blue-500"></i>
+            </div>
+
+            <!-- Hero Section -->
+            <div v-if="!isLoading && homeData.hero" class="relative h-[75vh] md:h-[85vh] w-full overflow-hidden">
+                <img :src="homeData.hero.img" class="absolute inset-0 object-cover w-full h-full object-top" />
+                <div class="absolute inset-0 hero-gradient z-10"></div>
+                <div class="absolute bottom-0 h-40 w-full hero-fade-bottom z-10"></div>
                 
-                <div class="absolute bottom-0 w-full px-4 pb-8 md:px-12 md:pb-20 z-20 max-w-3xl">
-                    <div class="flex items-center gap-2 bg-orange-500/20 text-orange-500 w-max px-3 py-1 rounded-full text-xs font-bold mb-3 border border-orange-500/30">
-                        <i data-lucide="flame" class="w-3.5 h-3.5 fill-orange-500"></i> Trending #1
-                    </div>
-                    
-                    <h1 class="text-4xl md:text-6xl font-extrabold mb-3 drop-shadow-lg flex items-center gap-3 flex-wrap">
-                        Solo Leveling Season 2 <span class="text-xs bg-primary text-white px-2.5 py-1 rounded-md font-bold">TV</span>
-                    </h1>
-                    
-                    <div class="flex flex-wrap gap-2 mb-4 text-xs font-semibold">
-                        <span class="bg-surface border border-gray-700 px-3 py-1 rounded-full text-gray-300">Skor: 9.5</span>
-                        <span class="bg-surface border border-gray-700 px-3 py-1 rounded-full text-gray-300">Episode 12</span>
-                    </div>
-                    
-                    <div class="flex items-center gap-3">
-                        <button onclick="loadDetail('solo-leveling-season-2')" class="bg-primary hover:bg-blue-600 shadow-[0_0_20px_rgba(30,144,255,0.4)] transition text-white px-6 md:px-8 py-3 rounded-full font-bold flex items-center gap-2 text-sm cursor-pointer">
-                            <i data-lucide="play" class="fill-white w-4 h-4"></i> Mulai Nonton
-                        </button>
-                        <button onclick="loadDetail('solo-leveling-season-2')" class="bg-surface/80 backdrop-blur border border-gray-600 hover:bg-surface transition text-white px-6 md:px-8 py-3 rounded-full font-bold flex items-center gap-2 text-sm cursor-pointer">
-                            <i data-lucide="info" class="w-4 h-4"></i> Detail
-                        </button>
+                <div class="absolute inset-0 z-20 flex flex-col justify-center px-4 md:px-12 mt-10">
+                    <div class="max-w-2xl">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="bg-red-600 flex items-center gap-1 text-white text-xs font-bold px-2 py-1 rounded">
+                                <i data-lucide="flame" class="w-3 h-3 fill-current"></i> Trending #1
+                            </span>
+                            <span class="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded">Season Terbaru</span>
+                        </div>
+                        <h1 class="text-4xl md:text-6xl font-black mb-4 italic uppercase tracking-wide drop-shadow-lg">{{ homeData.hero.title }}</h1>
+                        
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span v-for="(genre, idx) in homeData.hero.genres?.slice(0,3)" :key="idx" class="border border-gray-500 bg-black/40 px-3 py-1 rounded-full text-xs text-gray-300">
+                                {{ genre.tag }}
+                            </span>
+                        </div>
+                        
+                        <p class="text-gray-300 text-sm md:text-base mb-8 line-clamp-3 leading-relaxed">
+                            Ikuti petualangan seru dan menegangkan dari kelanjutan kisah {{ homeData.hero.title }}. Kekuatan baru yang bangkit mengundang bahaya tak terduga yang mengancam keseimbangan dunia!
+                        </p>
+                        
+                        <div class="flex items-center gap-4">
+                            <button @click="openDetail(homeData.hero)" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg flex items-center gap-2 transition shadow-lg shadow-blue-500/30">
+                                <i data-lucide="play" class="w-5 h-5 fill-current"></i> Mulai Nonton
+                            </button>
+                            <button @click="openDetail(homeData.hero)" class="bg-card/80 border border-gray-600 hover:bg-card text-white font-semibold py-3 px-6 rounded-lg flex items-center gap-2 transition">
+                                <i data-lucide="info" class="w-5 h-5"></i> Detail
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Anime Trending Section -->
-            <div class="px-4 md:px-12 mt-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-lg md:text-xl font-bold flex items-center gap-2">
-                        <i data-lucide="flame" class="text-orange-500 fill-orange-500"></i> Anime Trending
+            <!-- Trending / Ongoing Anime Grid -->
+            <div class="px-4 md:px-12 mt-4 relative z-20">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl md:text-2xl font-bold flex items-center gap-2">
+                        <i data-lucide="flame" class="w-6 h-6 text-red-500 fill-red-500"></i> Anime Trending
                     </h2>
-                    <span class="text-xs text-gray-400 hover:text-white cursor-pointer flex items-center gap-1 font-medium">Lihat Semua <i data-lucide="arrow-right" class="w-4 h-4"></i></span>
+                    <a href="#" class="text-sm text-gray-400 hover:text-white flex items-center gap-1">Lihat Semua <i data-lucide="arrow-right" class="w-4 h-4"></i></a>
                 </div>
                 
-                <div id="trending-container" class="flex overflow-x-auto gap-4 hide-scroll pb-4 snap-x">
-                    <div class="w-[140px] md:w-[190px] shrink-0 relative cursor-pointer group snap-start" onclick="loadDetail('solo-leveling-season-2')">
-                        <div class="absolute top-2 left-2 z-10 bg-primary text-white w-6 h-6 flex items-center justify-center rounded text-xs font-extrabold shadow-lg">1</div>
-                        <div class="overflow-hidden rounded-xl border border-gray-800 aspect-[3/4] relative bg-secondary shadow-md">
-                            <img src="https://image.tmdb.org/t/p/original/w6yxgGnbPz7Gk4kEqX9X9yNid99.jpg" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="Solo Leveling">
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                    <div v-for="(anime, idx) in homeData.trending" :key="idx" @click="openDetail(anime)" class="group cursor-pointer">
+                        <div class="relative aspect-[3/4] rounded-xl overflow-hidden mb-3 border border-gray-800 shadow-xl group-hover:border-blue-500/50 transition duration-300">
+                            <!-- Number Badge from Design -->
+                            <div class="absolute top-0 left-0 bg-blue-600 text-white font-black text-lg px-3 py-1 badge-polygon z-10 shadow-lg">
+                                {{ idx + 1 }}
+                            </div>
+                            <!-- Rating -->
+                            <div v-if="anime.score" class="absolute top-2 right-2 bg-black/80 backdrop-blur rounded px-2 py-0.5 text-xs font-bold text-yellow-500 flex items-center gap-1 z-10">
+                                <i data-lucide="star" class="w-3 h-3 fill-current"></i> {{ anime.score }}
+                            </div>
+                            <!-- Gradient & Play Icon on Hover -->
+                            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-center justify-center">
+                                <i data-lucide="play-circle" class="w-12 h-12 text-white opacity-80 group-hover:scale-110 transition-transform"></i>
+                            </div>
+                            <img :src="anime.img" class="object-cover w-full h-full group-hover:scale-110 transition duration-500" />
                         </div>
-                        <h3 class="mt-2 font-bold text-sm line-clamp-1 group-hover:text-primary transition">Solo Leveling Season 2</h3>
-                        <p class="text-[11px] text-gray-400 mt-0.5">Season 2</p>
-                    </div>
-                    <div class="w-[140px] md:w-[190px] shrink-0 relative cursor-pointer group snap-start" onclick="loadDetail('one-piece')">
-                        <div class="absolute top-2 left-2 z-10 bg-primary text-white w-6 h-6 flex items-center justify-center rounded text-xs font-extrabold shadow-lg">2</div>
-                        <div class="overflow-hidden rounded-xl border border-gray-800 aspect-[3/4] relative bg-secondary shadow-md">
-                            <img src="https://image.tmdb.org/t/p/original/fcxdJWw3c0B3kngO2e06cEQ2bEI.jpg" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="One Piece">
-                        </div>
-                        <h3 class="mt-2 font-bold text-sm line-clamp-1 group-hover:text-primary transition">One Piece</h3>
-                        <p class="text-[11px] text-gray-400 mt-0.5">Egghead Arc</p>
+                        <h3 class="font-semibold text-sm md:text-base line-clamp-1 group-hover:text-blue-400 transition">{{ anime.title }}</h3>
+                        <p class="text-gray-400 text-xs mt-1">{{ anime.episode || 'Latest' }}</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Genre Populer Section -->
-            <div class="px-4 md:px-12 mt-6 pb-24">
-                <h2 class="text-lg md:text-xl font-bold mb-4">Genre Populer</h2>
-                <div class="grid grid-cols-2 md:grid-cols-6 gap-3">
-                    <div class="bg-surface border border-gray-800 hover:border-primary transition p-3.5 rounded-xl flex items-center gap-3 cursor-pointer group shadow-sm">
-                        <div class="bg-gray-800 group-hover:bg-primary/20 p-2 rounded-lg transition"><i data-lucide="swords" class="w-5 h-5 text-gray-300 group-hover:text-primary"></i></div>
-                        <div><p class="font-bold text-xs md:text-sm">Action</p><p class="text-[10px] text-gray-500">Anime</p></div>
-                    </div>
-                    <div class="bg-surface border border-gray-800 hover:border-primary transition p-3.5 rounded-xl flex items-center gap-3 cursor-pointer group shadow-sm">
-                        <div class="bg-gray-800 group-hover:bg-primary/20 p-2 rounded-lg transition"><i data-lucide="map" class="w-5 h-5 text-gray-300 group-hover:text-primary"></i></div>
-                        <div><p class="font-bold text-xs md:text-sm">Adventure</p><p class="text-[10px] text-gray-500">Anime</p></div>
-                    </div>
-                    <div class="bg-surface border border-gray-800 hover:border-primary transition p-3.5 rounded-xl flex items-center gap-3 cursor-pointer group shadow-sm">
-                        <div class="bg-gray-800 group-hover:bg-primary/20 p-2 rounded-lg transition"><i data-lucide="sparkles" class="w-5 h-5 text-gray-300 group-hover:text-primary"></i></div>
-                        <div><p class="font-bold text-xs md:text-sm">Fantasy</p><p class="text-[10px] text-gray-500">Anime</p></div>
-                    </div>
-                    <div class="bg-surface border border-gray-800 hover:border-primary transition p-3.5 rounded-xl flex items-center gap-3 cursor-pointer group shadow-sm">
-                        <div class="bg-gray-800 group-hover:bg-primary/20 p-2 rounded-lg transition"><i data-lucide="heart" class="w-5 h-5 text-gray-300 group-hover:text-primary"></i></div>
-                        <div><p class="font-bold text-xs md:text-sm">Romance</p><p class="text-[10px] text-gray-500">Anime</p></div>
-                    </div>
-                    <div class="bg-surface border border-gray-800 hover:border-primary transition p-3.5 rounded-xl flex items-center gap-3 cursor-pointer group shadow-sm">
-                        <div class="bg-gray-800 group-hover:bg-primary/20 p-2 rounded-lg transition"><i data-lucide="smile" class="w-5 h-5 text-gray-300 group-hover:text-primary"></i></div>
-                        <div><p class="font-bold text-xs md:text-sm">Comedy</p><p class="text-[10px] text-gray-500">Anime</p></div>
-                    </div>
-                    <div class="bg-surface border border-gray-800 hover:border-primary transition p-3.5 rounded-xl flex items-center gap-3 cursor-pointer group shadow-sm">
-                        <div class="bg-gray-800 group-hover:bg-primary/20 p-2 rounded-lg transition"><i data-lucide="graduation-cap" class="w-5 h-5 text-gray-300 group-hover:text-primary"></i></div>
-                        <div><p class="font-bold text-xs md:text-sm">School</p><p class="text-[10px] text-gray-500">Anime</p></div>
+            <!-- Genre Populer Pills -->
+            <div class="px-4 md:px-12 mt-12 mb-10">
+                <h2 class="text-xl md:text-2xl font-bold mb-6">Genre Populer</h2>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                    <div v-for="(genre, idx) in homeData.genres" :key="idx" class="bg-card border border-gray-800 rounded-xl p-4 flex items-center gap-3 cursor-pointer hover:border-blue-500 hover:bg-gray-800/80 transition group shadow-md">
+                        <div class="w-10 h-10 rounded-full bg-gray-800 group-hover:bg-blue-500/20 flex items-center justify-center transition">
+                            <i data-lucide="hash" class="w-5 h-5 text-blue-500 group-hover:text-blue-400"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-medium text-white text-sm group-hover:text-blue-400 transition">{{ genre.title }}</h3>
+                            <p class="text-xs text-gray-500">{{ Math.floor(Math.random() * 500) + 100 }}+ anime</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- ===================================================================== -->
-        <!-- MOBILE NAVIGATION BAR                                                 -->
-        <!-- ===================================================================== -->
-        <div class="md:hidden fixed bottom-0 w-full bg-surface/95 backdrop-blur border-t border-gray-800 flex justify-around p-3 z-50 shadow-2xl">
-            <div class="flex flex-col items-center gap-0.5 text-primary cursor-pointer"><i data-lucide="home" class="w-5 h-5 fill-primary"></i><span class="text-[10px]">Beranda</span></div>
-            <div class="flex flex-col items-center gap-0.5 text-gray-400 cursor-pointer"><i data-lucide="flame" class="w-5 h-5"></i><span class="text-[10px]">Trending</span></div>
-            <div class="flex flex-col items-center gap-0.5 text-gray-400 cursor-pointer"><i data-lucide="layout-grid" class="w-5 h-5"></i><span class="text-[10px]">Semua Anime</span></div>
-            <div class="flex flex-col items-center gap-0.5 text-gray-400 cursor-pointer"><i data-lucide="calendar" class="w-5 h-5"></i><span class="text-[10px]">Jadwal</span></div>
-            <div class="flex flex-col items-center gap-0.5 text-gray-400 cursor-pointer"><i data-lucide="more-horizontal" class="w-5 h-5"></i><span class="text-[10px]">Lainnya</span></div>
+
+        <!-- ================= DETAIL / PLAYER VIEW (MOBILE STYLE OVERLAY) ================= -->
+        <div v-if="currentView === 'detail'" class="fixed inset-0 z-[100] bg-background overflow-y-auto flex justify-center">
+            <!-- Menyerupai tampilan Mobile/Detail dari desain yang diberikan -->
+            <div class="w-full max-w-2xl bg-card min-h-screen relative shadow-2xl flex flex-col">
+                
+                <!-- Navbar Player Overlay -->
+                <div class="absolute top-0 w-full z-20 flex justify-between items-center p-4 bg-gradient-to-b from-black/80 to-transparent">
+                    <button @click="closeDetail" class="w-10 h-10 rounded-full bg-black/40 backdrop-blur flex items-center justify-center hover:bg-blue-500 transition">
+                        <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                    </button>
+                    <div class="flex gap-3">
+                        <button class="w-10 h-10 rounded-full bg-black/40 backdrop-blur flex items-center justify-center hover:bg-gray-700 transition">
+                            <i data-lucide="share-2" class="w-5 h-5"></i>
+                        </button>
+                        <button class="w-10 h-10 rounded-full bg-black/40 backdrop-blur flex items-center justify-center hover:bg-red-500/20 transition group">
+                            <i data-lucide="heart" class="w-5 h-5 group-hover:text-red-500 group-hover:fill-red-500 transition"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Video Player Area -->
+                <div class="relative w-full aspect-video bg-black flex items-center justify-center border-b border-gray-800">
+                    <div v-if="isVideoLoading" class="flex flex-col items-center text-blue-500">
+                        <i data-lucide="loader-2" class="w-10 h-10 animate-spin mb-3"></i>
+                        <span class="text-sm font-medium">Memuat server video...</span>
+                    </div>
+                    <iframe v-else-if="videoUrl" :src="videoUrl" class="w-full h-full" allowfullscreen allow="autoplay"></iframe>
+                    <div v-else class="text-gray-500 text-sm flex flex-col items-center">
+                        <img :src="detailData?.img" class="absolute inset-0 object-cover w-full h-full opacity-30 blur-sm" v-if="detailData">
+                        <i data-lucide="play-circle" class="w-16 h-16 opacity-50 mb-2 relative z-10"></i>
+                        <span class="relative z-10">Pilih episode di bawah untuk memutar</span>
+                    </div>
+                </div>
+
+                <!-- Content Area -->
+                <div v-if="isDetailLoading" class="p-10 flex justify-center flex-1">
+                    <i data-lucide="loader-2" class="w-8 h-8 animate-spin text-blue-500"></i>
+                </div>
+                
+                <div v-else-if="detailData" class="p-5 flex-1 pb-32">
+                    <h1 class="text-2xl md:text-3xl font-bold mb-2">{{ detailData.title }}</h1>
+                    <p class="text-blue-400 text-sm mb-3">{{ detailData.japanese_title }}</p>
+                    
+                    <!-- Metadata tags -->
+                    <div class="flex flex-wrap items-center gap-2 mb-4">
+                        <span v-for="(tag, idx) in detailData.genres" :key="idx" class="border border-gray-700 bg-background text-xs px-2.5 py-1 rounded-full text-gray-300">
+                            {{ tag.tag || tag.title }}
+                        </span>
+                    </div>
+                    
+                    <div class="flex items-center gap-3 text-sm text-gray-400 mb-4 bg-background/50 p-3 rounded-lg border border-gray-800">
+                        <span class="flex items-center text-yellow-500 font-bold gap-1">
+                            <i data-lucide="star" class="w-4 h-4 fill-current"></i> {{ detailData.rating || 'N/A' }}
+                        </span>
+                        <span>•</span>
+                        <span>{{ detailData.type }}</span>
+                        <span>•</span>
+                        <span>{{ detailData.season || '2024' }}</span>
+                        <span>•</span>
+                        <span class="text-green-500">{{ detailData.status }}</span>
+                    </div>
+                    
+                    <!-- Description -->
+                    <p class="text-sm text-gray-300 leading-relaxed mb-8 border-b border-gray-800 pb-6">
+                        {{ (detailData.descriptions && detailData.descriptions[0]) || 'Belum ada sinopsis untuk anime ini.' }}
+                    </p>
+
+                    <!-- Episode List Header -->
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-lg font-bold">Pilih Episode</h2>
+                        <div class="bg-background border border-gray-700 rounded-lg px-3 py-1.5 flex items-center gap-2 text-sm cursor-pointer">
+                            <span class="text-gray-300">Semua Episode</span>
+                            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500"></i>
+                        </div>
+                    </div>
+
+                    <!-- Episode List Items -->
+                    <div class="space-y-3">
+                        <div v-for="eps in detailData.episodes" :key="eps.episode" 
+                            @click="playEpisode(eps)"
+                            class="flex items-center gap-4 p-2.5 rounded-xl border transition-all cursor-pointer group"
+                            :class="selectedEpisode?.episode === eps.episode ? 'border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/5' : 'border-gray-800 bg-background hover:border-gray-600'">
+                            
+                            <!-- Thumbnail with badge -->
+                            <div class="relative w-28 aspect-video rounded-lg bg-gray-800 overflow-hidden flex-shrink-0">
+                                <div class="absolute top-1 left-1 bg-black/80 rounded px-1.5 py-0.5 text-[10px] font-bold z-10 border border-gray-700">
+                                    {{ eps.episode }}
+                                </div>
+                                <img :src="detailData.img" class="object-cover w-full h-full opacity-60 group-hover:scale-110 transition duration-300 object-top" />
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <i data-lucide="play-circle" class="w-8 h-8 opacity-80" :class="selectedEpisode?.episode === eps.episode ? 'text-blue-500 fill-white' : 'text-white group-hover:text-blue-400'"></i>
+                                </div>
+                                <!-- Progress Bar Mockup (From Design) -->
+                                <div v-if="selectedEpisode?.episode === eps.episode" class="absolute bottom-0 left-0 w-full h-1 bg-gray-700"><div class="h-full bg-blue-500 w-3/4"></div></div>
+                            </div>
+                            
+                            <div class="flex-1 min-w-0">
+                                <h3 class="text-sm font-medium text-white line-clamp-2 leading-snug group-hover:text-blue-400 transition" :class="{'text-blue-500': selectedEpisode?.episode === eps.episode}">
+                                    {{ eps.title || `Episode ${eps.episode}` }}
+                                </h3>
+                                <p class="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                                    <i data-lucide="clock" class="w-3 h-3"></i> 24m
+                                </p>
+                            </div>
+                            
+                            <button class="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-blue-400 hover:bg-blue-500/10 rounded-full transition mr-1">
+                                <i data-lucide="download" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sticky Bottom Button (From Design) -->
+                <div v-if="!isDetailLoading && detailData" class="fixed bottom-0 w-full max-w-2xl bg-gradient-to-t from-background via-background to-transparent p-4 pt-10 z-30">
+                    <button @click="playFirstIfNone" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(37,99,235,0.4)] transition-all">
+                        <i data-lucide="play" class="fill-current w-5 h-5"></i> Tonton Sekarang
+                    </button>
+                </div>
+            </div>
         </div>
+
     </div>
 
-    <!-- ========================================================================= -->
-    <!-- JAVASCRIPT LOGIC CONTROLLER                                               -->
-    <!-- ========================================================================= -->
+    <!-- Application Script -->
     <script>
-        const API_URL = 'https://api.animekudesu.web.id';
+        const { createApp, ref, onMounted, nextTick } = Vue;
+        
+        // Menggunakan Endpoint API sesuai referensi file TypeScript
+        const API_BASE = 'https://api.animekudesu.web.id';
 
-        const state = {
-            view: 'home',
-            animeList: [
-                { title: 'Solo Leveling Season 2', link: 'solo-leveling-season-2', img: 'https://image.tmdb.org/t/p/original/w6yxgGnbPz7Gk4kEqX9X9yNid99.jpg', type: 'TV', score: '9.5', episode: 'Episode 12' },
-                { title: 'One Piece', link: 'one-piece', img: 'https://image.tmdb.org/t/p/original/fcxdJWw3c0B3kngO2e06cEQ2bEI.jpg', type: 'TV', score: '9.1', episode: 'Episode 1087' }
-            ],
-            detail: null,
-            activeVideo: { isLoading: false, url: null, servers: [], activeServerPath: null, error: null }
-        };
-
-        function goHome() {
-            state.view = 'home';
-            state.detail = null;
-            window.location.reload();
-        }
-
-        function extractSlug(link) {
-            if (!link) return '';
-            let clean = link.split('?')[0].split('#')[0];
-            let parts = clean.split('/').filter(Boolean);
-            return parts[parts.length - 1] || '';
-        }
-
-        async function loadDetail(slugOrLink) {
-            state.view = 'detail';
-            state.activeVideo = { isLoading: false, url: null, servers: [], activeServerPath: null, error: null };
-            const viewport = document.getElementById('main-viewport');
-
-            viewport.innerHTML = `
-                <div class="min-h-[70vh] flex flex-col items-center justify-center">
-                    <i data-lucide="loader-2" class="w-10 h-10 animate-spin text-primary mb-3"></i>
-                    <p class="text-gray-400 text-sm font-medium">Memuat Detail Anime & Server Video...</p>
-                </div>
-            `;
-            if (window.lucide) window.lucide.createIcons();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-
-            try {
-                let slug = extractSlug(slugOrLink) || 'solo-leveling-season-2';
-                const res = await fetch(`${API_URL}/detail-anime/${slug}`);
-                if (!res.ok) throw new Error('Gagal mengambil detail dari server API.');
+        createApp({
+            setup() {
+                const currentView = ref('home');
+                const homeData = ref({ hero: null, trending: [], genres: [] });
+                const detailData = ref(null);
+                const selectedEpisode = ref(null);
+                const videoUrl = ref(null);
                 
-                state.detail = await res.json();
-                renderDetailView();
+                const isLoading = ref(true);
+                const isDetailLoading = ref(false);
+                const isVideoLoading = ref(false);
 
-                const eps = state.detail.episodes || [];
-                if (eps.length > 0) {
-                    selectAndPlayEpisode(eps[0].detail_eps);
-                }
-            } catch (err) {
-                viewport.innerHTML = `
-                    <div class="p-12 text-center min-h-[70vh] flex flex-col items-center justify-center">
-                        <p class="text-red-400 mb-4 font-semibold">Gagal memuat detail dari API: ${err.message}</p>
-                        <button onclick="goHome()" class="bg-primary px-6 py-2.5 rounded-full text-white font-bold cursor-pointer">Kembali ke Beranda</button>
-                    </div>
-                `;
-                if (window.lucide) window.lucide.createIcons();
+                // Fungsi Smart Fetch (Mencegah kendala CORS bila dijalankan lokal via file://)
+                const fetchApi = async (endpoint) => {
+                    try {
+                        const res = await fetch(API_BASE + endpoint);
+                        if (!res.ok) throw new Error('API down');
+                        return await res.json();
+                    } catch (e) {
+                        console.warn("Mencoba fallback proksi publik akibat limitasi CORS lokal...");
+                        try {
+                            const proxyRes = await fetch('https://corsproxy.io/?' + encodeURIComponent(API_BASE + endpoint));
+                            return await proxyRes.json();
+                        } catch (err) {
+                            console.error("Gagal mengambil data API:", err);
+                            return null;
+                        }
+                    }
+                };
+
+                // Pengekstrak Slug Identik dengan file HomeClient.tsx
+                const getSlug = (anime) => {
+                    if (anime.slug) return anime.slug.replace('/anime/', '').replace('/', '');
+                    const url = anime.detail_url || anime.link || '';
+                    const parts = url.split('/').filter(Boolean);
+                    return parts[parts.length - 1] || '';
+                };
+
+                const loadHomeData = async () => {
+                    isLoading.value = true;
+                    // Ambil API secara paralel
+                    const [newAnime, ongoing, genresReq] = await Promise.all([
+                        fetchApi('/new-anime'),
+                        fetchApi('/ongoing-anime'),
+                        fetchApi('/genres')
+                    ]);
+
+                    if (newAnime?.data?.length) {
+                        homeData.value.hero = newAnime.data[0];
+                    }
+                    if (ongoing?.data?.length) {
+                        homeData.value.trending = ongoing.data.slice(0, 8);
+                    }
+                    if (genresReq?.data?.length) {
+                        homeData.value.genres = genresReq.data.slice(0, 6);
+                    }
+                    
+                    isLoading.value = false;
+                    nextTick(() => lucide.createIcons());
+                };
+
+                const openDetail = async (anime) => {
+                    const slug = getSlug(anime);
+                    if (!slug) return;
+                    
+                    currentView.value = 'detail';
+                    isDetailLoading.value = true;
+                    detailData.value = null;
+                    selectedEpisode.value = null;
+                    videoUrl.value = null;
+                    window.scrollTo(0, 0);
+
+                    // Panggil API detail anime
+                    const data = await fetchApi(`/detail-anime/${slug}`);
+                    if (data) {
+                        detailData.value = data;
+                    }
+                    isDetailLoading.value = false;
+                    nextTick(() => lucide.createIcons());
+                };
+
+                const playEpisode = async (eps) => {
+                    selectedEpisode.value = eps;
+                    videoUrl.value = null;
+                    isVideoLoading.value = true;
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+                    // Ambil detail url video (iframe provider) berdasarkan spesifikasi
+                    const epsData = await fetchApi(eps.detail_eps);
+                    if (epsData?.videos?.length) {
+                        const videoPath = epsData.videos[0].video;
+                        const vidRes = await fetchApi(videoPath);
+                        if (vidRes?.url) {
+                            videoUrl.value = vidRes.url;
+                        }
+                    }
+                    isVideoLoading.value = false;
+                };
+
+                const playFirstIfNone = () => {
+                    if (!selectedEpisode.value && detailData.value?.episodes?.length) {
+                        playEpisode(detailData.value.episodes[0]);
+                    } else if (selectedEpisode.value) {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                };
+
+                const closeDetail = () => {
+                    currentView.value = 'home';
+                    videoUrl.value = null; 
+                    nextTick(() => lucide.createIcons());
+                };
+
+                onMounted(() => {
+                    loadHomeData();
+                });
+
+                return {
+                    currentView, homeData, detailData, selectedEpisode, videoUrl,
+                    isLoading, isDetailLoading, isVideoLoading,
+                    openDetail, playEpisode, playFirstIfNone, closeDetail
+                };
             }
-        }
-
-        async function selectAndPlayEpisode(detailEpsUrl) {
-            state.activeVideo = { isLoading: true, url: null, servers: [], activeServerPath: null, error: null };
-            updatePlayerAndServersUI();
-
-            try {
-                const res = await fetch(`${API_URL}${detailEpsUrl}`);
-                if (!res.ok) throw new Error('Gagal mengambil data server episode.');
-                const data = await res.json();
-                
-                const videos = data.videos || [];
-                if (videos.length === 0) throw new Error('Server video tidak tersedia untuk episode ini.');
-
-                state.activeVideo.servers = videos;
-                await playServerVideo(videos[0].video);
-            } catch (err) {
-                state.activeVideo.isLoading = false;
-                state.activeVideo.error = err.message;
-                updatePlayerAndServersUI();
-            }
-        }
-
-        async function playServerVideo(videoPath) {
-            state.activeVideo.isLoading = true;
-            state.activeVideo.activeServerPath = videoPath;
-            updatePlayerAndServersUI();
-
-            try {
-                const res = await fetch(`${API_URL}${videoPath}`);
-                if (!res.ok) throw new Error('Gagal terhubung ke endpoint server video.');
-                const data = await res.json();
-
-                if (!data.url) throw new Error('URL stream video kosong dari server.');
-
-                state.activeVideo.isLoading = false;
-                state.activeVideo.url = data.url;
-                state.activeVideo.error = null;
-            } catch (err) {
-                state.activeVideo.isLoading = false;
-                state.activeVideo.error = err.message;
-            }
-            updatePlayerAndServersUI();
-        }
-
-        function updatePlayerAndServersUI() {
-            const playerWrapper = document.getElementById('player-dynamic-wrapper');
-            if (!playerWrapper) return;
-
-            const vid = state.activeVideo;
-            let playerHTML = '';
-
-            if (vid.isLoading) {
-                playerHTML = `<div class="absolute inset-0 flex flex-col items-center justify-center bg-black/90 z-30"><i data-lucide="loader-2" class="w-10 h-10 animate-spin text-primary mb-2"></i><p class="text-gray-300 text-sm">Menyiapkan Server Video...</p></div>`;
-            } else if (vid.error) {
-                playerHTML = `<div class="absolute inset-0 flex flex-col items-center justify-center bg-gray-950 z-30 px-4 text-center"><p class="text-red-400 font-medium mb-1">Gagal Memutar Video</p><p class="text-gray-400 text-xs">${vid.error}</p></div>`;
-            } else if (vid.url) {
-                playerHTML = `<iframe src="${vid.url}" class="absolute inset-0 w-full h-full border-0 z-30" allowfullscreen loading="lazy"></iframe>`;
-            }
-
-            playerWrapper.innerHTML = playerHTML;
-
-            const serverContainer = document.getElementById('server-buttons-container');
-            if (serverContainer && vid.servers.length > 0) {
-                serverContainer.innerHTML = `
-                    <div class="flex items-center gap-2 mb-2"><i data-lucide="server" class="w-4 h-4 text-primary"></i><span class="text-xs font-bold text-gray-400">Pilih Server Player:</span></div>
-                    <div class="flex flex-wrap gap-2">
-                        ${vid.servers.map(srv => `
-                            <button onclick="playServerVideo('${srv.video}')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition border cursor-pointer ${vid.activeServerPath === srv.video ? 'bg-primary border-primary text-white shadow-[0_0_10px_rgba(30,144,255,0.4)]' : 'bg-surface border-gray-700 text-gray-300 hover:border-gray-500'}">
-                                ${srv.title}
-                            </button>
-                        `).join('')}
-                    </div>
-                `;
-            }
-            if (window.lucide) window.lucide.createIcons();
-        }
-
-        function renderDetailView() {
-            const viewport = document.getElementById('main-viewport');
-            const anime = state.detail;
-            const episodes = anime.episodes || [];
-            const tags = anime.genres ? anime.genres.map(g => g.tag) : [];
-
-            viewport.innerHTML = `
-                <div class="relative min-h-screen bg-background pb-20">
-                    <div class="absolute top-0 w-full z-50 p-4 flex justify-between items-center bg-gradient-to-b from-black/80 to-transparent">
-                        <button onclick="goHome()" class="w-10 h-10 bg-black/50 border border-white/10 rounded-full backdrop-blur-md flex items-center justify-center hover:bg-black/80 transition cursor-pointer">
-                            <i data-lucide="arrow-left" class="w-5 h-5 text-white"></i>
-                        </button>
-                        <div class="flex gap-2">
-                            <button class="w-10 h-10 bg-black/50 border border-white/10 rounded-full backdrop-blur-md flex items-center justify-center cursor-pointer"><i data-lucide="share-2" class="w-4 h-4 text-white"></i></button>
-                            <button class="w-10 h-10 bg-black/50 border border-white/10 rounded-full backdrop-blur-md flex items-center justify-center cursor-pointer"><i data-lucide="heart" class="w-4 h-4 text-white"></i></button>
-                        </div>
-                    </div>
-
-                    <div id="video-player-area" class="relative w-full aspect-video md:h-[65vh] bg-black overflow-hidden shadow-2xl">
-                        <img src="${anime.img}" class="absolute inset-0 w-full h-full object-cover opacity-50" alt="Cover Poster">
-                        <div class="absolute inset-0 hero-grad z-10"></div>
-                        <div id="player-dynamic-wrapper" class="absolute inset-0"></div>
-                    </div>
-
-                    <div class="px-4 md:px-12 max-w-4xl mx-auto -mt-6 md:-mt-12 relative z-30">
-                        <h1 class="text-3xl md:text-5xl font-extrabold mb-1 text-white">${anime.japanese_title || anime.title}</h1>
-                        <p class="text-sm text-gray-400 mb-4 font-medium">${anime.title} Sub Indo</p>
-                        
-                        <div id="server-buttons-container" class="mb-5 bg-surface/80 p-3.5 rounded-xl border border-gray-800 shadow-lg"></div>
-
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            ${tags.map(t => `<span class="bg-surface border border-gray-700/60 px-3.5 py-1 rounded-full text-xs font-semibold text-gray-300">${t}</span>`).join('')}
-                        </div>
-                        
-                        <div class="flex flex-wrap items-center gap-2.5 text-xs md:text-sm text-gray-300 mb-5 font-semibold bg-surface/60 p-3 rounded-xl border border-gray-800 w-max shadow-sm">
-                            <span class="flex items-center gap-1 text-yellow-500 font-bold"><i data-lucide="star" class="w-4 h-4 fill-yellow-500"></i> ${anime.rating || '9.1'}</span>
-                            <span class="text-gray-600">|</span>
-                            <span>${anime.type || 'TV'}</span>
-                            <span class="text-gray-600">|</span>
-                            <span>${anime.released || '2024'}</span>
-                            <span class="text-gray-600">|</span>
-                            <span class="text-primary">${anime.status || 'Ongoing'}</span>
-                        </div>
-
-                        <p class="text-sm text-gray-300 mb-8 leading-relaxed">
-                            ${anime.descriptions ? anime.descriptions.join('<br><br>') : 'Tidak ada sinopsis tersedia.'}
-                        </p>
-
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="font-bold text-lg text-white flex items-center gap-2"><i data-lucide="list-video" class="text-primary w-5 h-5"></i> Pilih Episode (${episodes.length})</h3>
-                        </div>
-
-                        <div class="bg-surface rounded-xl border border-gray-800 px-4 py-3 mb-4 flex justify-between items-center text-sm font-semibold shadow-inner">
-                            <span>Episode Terbaru & Terlengkap</span>
-                            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400"></i>
-                        </div>
-
-                        <div class="flex flex-col gap-3">
-                            ${episodes.map((ep, idx) => `
-                                <div onclick="selectAndPlayEpisode('${ep.detail_eps}')" class="flex items-center gap-3.5 p-2 rounded-xl hover:bg-surface transition cursor-pointer group border border-transparent hover:border-gray-800 bg-surface/30">
-                                    <div class="relative w-32 aspect-video rounded-lg overflow-hidden shrink-0 bg-gray-900 border border-gray-800">
-                                         <img src="${anime.img}" class="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition" alt="Thumb">
-                                        <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
-                                            <i data-lucide="play-circle" class="w-8 h-8 text-white opacity-80 group-hover:text-primary transition group-hover:scale-110"></i>
-                                        </div>
-                                        <div class="absolute top-1 left-1 bg-black/70 px-1.5 py-0.5 rounded text-[10px] font-bold">
-                                            ${ep.episode || idx + 1}
-                                        </div>
-                                    </div>
-                                    <div class="flex-1 min-w-0 pr-2">
-                                        <h4 class="font-bold text-sm text-gray-200 group-hover:text-white truncate mb-0.5 flex items-center gap-2">
-                                            Episode ${ep.episode \vert{}\vert{} idx + 1}${idx === 0 ? '<span class="bg-primary text-white text-[9px] px-1.5 py-0.5 rounded font-extrabold uppercase">Terbaru</span>' : ''}
-                                        </h4>
-                                        <p class="text-xs text-gray-400 truncate">${ep.title}</p>
-                                    </div>
-                                    <button class="p-2.5 text-gray-400 hover:text-white hover:bg-gray-800 rounded-full transition cursor-pointer"><i data-lucide="download" class="w-5 h-5"></i></button>
-                                </div>
-                            `).join('')}
-                            ${episodes.length === 0 ? '<p class="text-sm text-gray-500 py-6 text-center">Belum ada episode tersedia.</p>' : ''}
-                        </div>
-                    </div>
-                </div>
-            `;
-            if (window.lucide) window.lucide.createIcons();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            if (window.lucide) {
-                window.lucide.createIcons();
-            }
-        });
+        }).mount('#app');
     </script>
 </body>
 </html>
