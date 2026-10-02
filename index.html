@@ -79,7 +79,7 @@
         <!-- LOADING UTAMA (BERANDA) -->
         <div v-if="isLoadingHome" class="h-screen flex flex-col justify-center items-center gap-4">
             <i data-lucide="loader-2" class="w-12 h-12 animate-spin text-blue-600"></i>
-            <span class="text-gray-400 font-medium tracking-widest uppercase text-sm">Memuat Data Server...</span>
+            <span class="text-gray-400 font-medium tracking-widest uppercase text-sm text-center">Memuat Data API...<br><span class="text-xs">Tunggu sebentar...</span></span>
         </div>
 
         <!-- ================= HOME VIEW ================= -->
@@ -178,7 +178,7 @@
                 </div>
             </div>
 
-            <!-- 3. Dynamic Lists By Genre (Baru) -->
+            <!-- 3. Dynamic Lists By Genre (Paralel) -->
             <div v-for="(genreObj, gIdx) in homeData.genreLists" :key="'g'+gIdx" class="mt-6 md:mt-10 px-4 md:px-12 pt-16 -mt-16">
                 <div class="flex items-center justify-between mb-4 md:mb-6">
                     <h2 class="text-xl md:text-2xl font-bold flex items-center gap-2">
@@ -236,7 +236,7 @@
                 
                 <!-- Navbar Player Overlay -->
                 <div class="absolute top-0 w-full z-30 flex justify-between items-center p-4 bg-gradient-to-b from-black/90 to-transparent">
-                    <button @click="changeView('home')" class="w-10 h-10 rounded-full bg-black/50 backdrop-blur flex items-center justify-center hover:bg-blue-600 transition shadow-lg border border-gray-700">
+                    <button @click="forceBack" class="w-10 h-10 rounded-full bg-black/50 backdrop-blur flex items-center justify-center hover:bg-blue-600 transition shadow-lg border border-gray-700">
                         <i data-lucide="arrow-left" class="w-5 h-5 text-white"></i>
                     </button>
                     <div class="flex gap-3">
@@ -254,10 +254,10 @@
                         <span class="text-sm font-medium tracking-widest uppercase text-center px-4">Menghubungkan ke Server...</span>
                     </div>
 
-                    <div v-else-if="videoError" class="text-red-400 text-sm flex flex-col items-center z-20 px-6 text-center bg-black/80 p-6 rounded-2xl">
+                    <div v-else-if="videoError" class="text-red-400 text-sm flex flex-col items-center z-20 px-6 text-center bg-black/80 p-6 rounded-2xl border border-red-500/30">
                         <i data-lucide="alert-circle" class="w-12 h-12 opacity-80 mb-2"></i>
-                        <span class="font-bold text-lg mb-1">Server Gagal Memuat</span>
-                        <span class="text-gray-400">Silakan pilih server alternatif di menu bawah.</span>
+                        <span class="font-bold text-lg mb-1">Video Server Gagal</span>
+                        <span class="text-gray-400">Silakan pilih server resolusi alternatif di menu bawah.</span>
                     </div>
                     
                     <iframe v-else-if="videoUrl" :src="videoUrl" class="absolute inset-0 w-full h-full z-10" allowfullscreen allow="autoplay"></iframe>
@@ -274,7 +274,7 @@
                 <div v-if="videoServers.length > 0 && !isVideoLoading" class="px-4 py-3 bg-gray-900 border-b border-gray-800">
                     <div class="flex items-center gap-2 mb-2">
                         <i data-lucide="server" class="w-4 h-4 text-blue-500"></i>
-                        <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Pilih Server (Ubah jika macet)</span>
+                        <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Pilih Server (Ubah jika error/macet)</span>
                     </div>
                     <div class="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
                         <button v-for="(server, idx) in videoServers" :key="idx" 
@@ -288,9 +288,13 @@
                 </div>
 
                 <!-- ======== CONTENT AREA ======== -->
+                <!-- STATUS LOADING ANTI-MACET (MUNCUL DI SCREENSHOT) -->
                 <div v-if="isDetailLoading" class="p-10 flex flex-col items-center justify-center flex-1">
                     <i data-lucide="loader-2" class="w-10 h-10 animate-spin text-blue-600 mb-4"></i>
-                    <p class="text-gray-400 font-medium text-center">Mencari Data Anime...<br><span class="text-xs text-gray-600 mt-2 block">Tunggu sebentar ya...</span></p>
+                    <p class="text-gray-400 font-medium text-center">Mencari Data Anime...<br><span class="text-xs text-gray-600 mt-2 block">Sistem memiliki batas waktu tunggu maksimal 8 detik.</span></p>
+                    <button @click="forceBack" class="mt-8 text-sm text-blue-500 border border-blue-500/50 hover:bg-blue-500/10 px-4 py-2 rounded-lg transition-all">
+                        Batalkan & Kembali
+                    </button>
                 </div>
                 
                 <div v-else-if="detailData" class="p-4 md:p-8 flex-1 pb-32">
@@ -369,12 +373,12 @@
                     </div>
                 </div>
 
-                <!-- ERROR STATE (Solusi Bug Infinite Loading) -->
+                <!-- ERROR STATE -->
                 <div v-else class="p-10 flex flex-col items-center justify-center flex-1 text-center pb-32">
                     <i data-lucide="alert-triangle" class="w-14 h-14 text-red-500 mb-4"></i>
                     <p class="text-white font-bold text-xl mb-2">Gagal Memuat Data</p>
-                    <p class="text-gray-400 text-sm max-w-md">Format URL yang dikirim API tidak dikenali, atau server sedang sibuk. Silakan coba anime yang lain.</p>
-                    <button @click="changeView('home')" class="mt-8 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-8 rounded-lg transition-all shadow-lg">
+                    <p class="text-gray-400 text-sm max-w-md">Koneksi *timeout* atau server API anime sedang menolak *request*. Coba kembali nanti atau pilih anime lain.</p>
+                    <button @click="forceBack" class="mt-8 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-8 rounded-lg transition-all shadow-lg">
                         Kembali ke Beranda
                     </button>
                 </div>
@@ -416,38 +420,56 @@
                 const isScrolled = ref(false);
                 const isMobileMenuOpen = ref(false);
 
-                // Fetch API yang 100% Kebal Macet
+                // ==========================================
+                // SISTEM FETCH ANTI-MACET (TIMEOUT 8 DETIK)
+                // ==========================================
+                const fetchWithTimeout = async (url, options = {}, timeoutMs = 8000) => {
+                    const controller = new AbortController();
+                    const id = setTimeout(() => controller.abort(), timeoutMs);
+                    try {
+                        const response = await fetch(url, { ...options, signal: controller.signal });
+                        clearTimeout(id);
+                        return response;
+                    } catch (err) {
+                        clearTimeout(id);
+                        throw err; // Lempar error jika timeout
+                    }
+                };
+
                 const fetchApi = async (endpoint) => {
                     const path = endpoint.startsWith('/') ? endpoint : '/' + endpoint;
                     const targetUrl = API_BASE + path;
                     
                     try {
-                        const res = await fetch(targetUrl);
-                        if (!res.ok) throw new Error('API Error');
+                        // 1. Coba fetch langsung ke API
+                        const res = await fetchWithTimeout(targetUrl);
+                        if (!res.ok) throw new Error('API Direct Error');
                         const text = await res.text();
                         return text ? JSON.parse(text) : null;
                     } catch (e) {
                         try {
-                            // Raw Proxy AllOrigins yang lebih stabil untuk request JSON murni[span_4](start_span)[span_4](end_span)
-                            const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl);
-                            const proxyRes = await fetch(proxyUrl);
+                            // 2. Fallback Proxy (menggunakan format ekstraksi JSON murni)[cite: 2]
+                            const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(targetUrl);
+                            const proxyRes = await fetchWithTimeout(proxyUrl);
                             if (!proxyRes.ok) return null;
-                            const proxyText = await proxyRes.text();
-                            return proxyText ? JSON.parse(proxyText) : null;
+                            const proxyData = await proxyRes.json();
+                            // allorigins membungkus respons asli di dalam properti "contents"
+                            return proxyData.contents ? JSON.parse(proxyData.contents) : null;
                         } catch (err) {
-                            console.error("Semua Jalur Fetch Gagal:", err);
+                            console.error("Fetch API Gagal Total:", err);
                             return null;
                         }
                     }
                 };
 
-                // Parser Slug yang Kebal Error
+                // Parser Slug Super Akurat
                 const getSlug = (anime) => {
                     try {
                         let rawStr = anime.slug || anime.detail_url || anime.link || '';
                         const cleanPath = rawStr.replace(/^(?:https?:\/\/[^\/]+)?/i, '').split('?')[0].split('#')[0];
                         const parts = cleanPath.split('/').filter(Boolean);
                         
+                        // Cari bagian setelah "detail-anime" atau "anime"
                         const detailIdx = parts.indexOf('detail-anime');
                         if (detailIdx !== -1 && parts.length > detailIdx + 1) return parts[detailIdx + 1];
                         
@@ -462,7 +484,7 @@
 
                 const loadHomeData = async () => {
                     isLoadingHome.value = true;
-                    // Ambil kategori utama dan daftar genre secara paralel[span_5](start_span)[span_5](end_span)[span_6](start_span)[span_6](end_span)[span_7](start_span)[span_7](end_span)
+                    // Ambil kategori utama secara bersamaan (paralel) agar tidak makan waktu[cite: 3, 5]
                     const [ongoingRes, completedRes, movieRes, genresRes] = await Promise.all([
                         fetchApi('/ongoing-anime'),
                         fetchApi('/completed-anime'),
@@ -477,7 +499,7 @@
                     if (completedRes?.data) homeData.value.completed = completedRes.data;
                     if (movieRes?.data) homeData.value.movies = movieRes.data;
 
-                    // Mengambil Anime dari 3 Genre Teratas secara Otomatis[span_8](start_span)[span_8](end_span)
+                    // Mengambil 3 list tambahan per genre populer[cite: 5]
                     if (genresRes?.data) {
                         const topGenres = genresRes.data.slice(0, 3);
                         const genrePromises = topGenres.map(async (g) => {
@@ -499,9 +521,15 @@
                     nextTick(() => lucide.createIcons());
                 };
 
+                // Tombol Back Paksa jika bosan menunggu loading
+                const forceBack = () => {
+                    isDetailLoading.value = false;
+                    changeView('home');
+                };
+
                 const openDetail = async (anime) => {
                     const slug = getSlug(anime);
-                    if (!slug) return alert("Sistem tidak dapat memproses URL anime ini.");
+                    if (!slug) return alert("Sistem tidak dapat membaca URL anime ini.");
                     
                     changeView('detail');
                     isDetailLoading.value = true;
@@ -512,18 +540,20 @@
                     activeServer.value = null;
                     videoError.value = false;
 
-                    // BLOK INI MENGGUNAKAN TRY-FINALLY AGAR TIDAK PERNAH MACET
+                    // ==================================================
+                    // BLOK FINALLY: Memastikan loading PASTI BERHENTI
+                    // ==================================================
                     try {
                         const data = await fetchApi(`/detail-anime/${slug}`);
                         if (data && data.title) {
                             detailData.value = data;
                         } else {
-                            detailData.value = null; // Memaksa UI menampilkan error state
+                            detailData.value = null; // Memaksa render error-state
                         }
                     } catch (err) {
                         detailData.value = null;
                     } finally {
-                        isDetailLoading.value = false; // PASTI dimatikan apa pun yang terjadi
+                        isDetailLoading.value = false; // TIDAK AKAN STUCK LAGI
                         nextTick(() => lucide.createIcons());
                     }
                 };
@@ -542,6 +572,7 @@
                         const epsData = await fetchApi(eps.detail_eps);
                         if (epsData?.videos?.length > 0) {
                             videoServers.value = epsData.videos;
+                            // Play server urutan pertama otomatis
                             await switchServer(epsData.videos[0]);
                         } else {
                             videoError.value = true;
@@ -549,7 +580,7 @@
                     } catch (err) {
                         videoError.value = true;
                     } finally {
-                        isVideoLoading.value = false; // Mencegah loading terus
+                        isVideoLoading.value = false; // Bebas stuck
                     }
                 };
 
@@ -569,7 +600,7 @@
                     } catch (e) {
                         videoError.value = true;
                     } finally {
-                        isVideoLoading.value = false;
+                        isVideoLoading.value = false; // Bebas stuck
                     }
                 };
 
@@ -592,7 +623,7 @@
                     selectedEpisode, videoUrl, videoServers, activeServer, videoError,
                     isLoadingHome, isDetailLoading, isVideoLoading,
                     isScrolled, isMobileMenuOpen,
-                    changeView, openDetail, playEpisode, playFirstIfNone, switchServer
+                    changeView, forceBack, openDetail, playEpisode, playFirstIfNone, switchServer
                 };
             }
         }).mount('#app');
